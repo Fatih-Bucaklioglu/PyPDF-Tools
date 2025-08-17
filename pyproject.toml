@@ -1,0 +1,177 @@
+[build-system]
+requires = [
+    "setuptools>=65.0",
+    "wheel>=0.37.0",
+    "build>=0.8.0"
+]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pypdf-tools"
+version = "2.0.0"
+description = "Modern, Powerful and User-Friendly PDF Processing Application"
+readme = "README.md"
+license = {file = "LICENSE"}
+authors = [
+    {name = "Fatih Bucaklıoğlu", email = "fatih@pypdf-tools.com"}
+]
+maintainers = [
+    {name = "Fatih Bucaklıoğlu", email = "fatih@pypdf-tools.com"}
+]
+keywords = [
+    "pdf", "merge", "split", "compress", "ocr", "convert", 
+    "gui", "desktop", "tool", "utility", "document", 
+    "processing", "qt6", "cross-platform", "stirling-pdf"
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: End Users/Desktop",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Office/Business",
+    "Topic :: Utilities",
+    "Topic :: Multimedia :: Graphics",
+    "Topic :: Text Processing",
+    "Environment :: X11 Applications :: Qt",
+    "Environment :: Win32 (MS Windows)",
+    "Environment :: MacOS X",
+]
+requires-python = ">=3.8"
+dependencies = [
+    # GUI Framework
+    "PyQt6>=6.5.0",
+    "PyQt6-Qt6>=6.5.0",
+    
+    # PDF Processing
+    "PyPDF2>=3.0.0",
+    "pymupdf>=1.23.0",
+    "reportlab>=4.0.0",
+    
+    # Image Processing
+    "Pillow>=10.0.0",
+    "opencv-python>=4.8.0",
+    
+    # OCR
+    "pytesseract>=0.3.10",
+    
+    # Document Conversion
+    "python-docx>=1.0.0",
+    "openpyxl>=3.1.0",
+    "python-pptx>=0.6.21",
+    
+    # Utilities
+    "psutil>=5.9.0",
+    "requests>=2.31.0",
+    "packaging>=23.0",
+    "appdirs>=1.4.4",
+    "send2trash>=1.8.2",
+    
+    # Logging & Config
+    "colorlog>=6.7.0",
+    "pyyaml>=6.0",
+    "toml>=0.10.2",
+    
+    # Compression
+    "zstandard>=0.21.0",
+    
+    # Encryption
+    "cryptography>=41.0.0",
+]
+
+[project.optional-dependencies]
+ocr = [
+    "easyocr>=1.7.0",
+    "paddlepaddle>=2.5.0",
+    "paddleocr>=2.7.0",
+]
+ai = [
+    "transformers>=4.33.0",
+    "torch>=2.0.0",
+    "opencv-python>=4.8.0",
+]
+cloud = [
+    "boto3>=1.28.0",
+    "google-cloud-storage>=2.10.0",
+    "dropbox>=11.36.0",
+]
+dev = [
+    # Testing
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "pytest-mock>=3.11.0",
+    "pytest-qt>=4.2.0",
+    "pytest-xvfb>=3.0.0",
+    "pytest-timeout>=2.1.0",
+    
+    # Code Quality
+    "black>=23.7.0",
+    "isort>=5.12.0",
+    "flake8>=6.0.0",
+    "pylint>=2.17.0",
+    "mypy>=1.5.0",
+    
+    # Pre-commit
+    "pre-commit>=3.3.0",
+    
+    # Documentation
+    "sphinx>=7.1.0",
+    "sphinx-rtd-theme>=1.3.0",
+    "sphinx-autodoc-typehints>=1.24.0",
+    
+    # Build tools
+    "build>=0.10.0",
+    "wheel>=0.41.0",
+    "twine>=4.0.0",
+]
+all = [
+    "easyocr>=1.7.0",
+    "transformers>=4.33.0",
+    "boto3>=1.28.0",
+    "pytest>=7.4.0",
+    "black>=23.7.0",
+    "sphinx>=7.1.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/Fatih-Bucaklioglu/PyPDF-Tools"
+Documentation = "https://pypdf-tools.readthedocs.io/"
+Repository = "https://github.com/Fatih-Bucaklioglu/PyPDF-Tools.git"
+"Bug Reports" = "https://github.com/Fatih-Bucaklioglu/PyPDF-Tools/issues"
+"Feature Requests" = "https://github.com/Fatih-Bucaklioglu/PyPDF-Tools/issues/new?template=feature_request.md"
+Changelog = "https://github.com/Fatih-Bucaklioglu/PyPDF-Tools/blob/main/CHANGELOG.md"
+Discord = "https://discord.gg/pypdf-tools"
+Telegram = "https://t.me/pypdf_tools"
+Reddit = "https://reddit.com/r/PyPDFTools"
+
+[project.scripts]
+pypdf-tools = "pypdf_tools.main:main"
+pypdf-cli = "pypdf_tools.cli.cli_handler:main"
+pypdf-setup = "pypdf_tools.setup:setup_wizard"
+
+[project.gui-scripts]
+pypdf-tools-gui = "pypdf_tools.main:main_gui"
+
+# Tool configurations
+[tool.setuptools]
+zip-safe = false
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["pypdf_tools*"]
+exclude = ["tests*", "docs*", "build*", "dist*"]
+
+[tool.setuptools.package-data]
+pypdf_tools = [
+    "ui/themes/*.qss",
+    "ui/icons/*.png",
+    "ui/icons/*.svg",
+    "ui/icons/*.ico", 
+    "ui
