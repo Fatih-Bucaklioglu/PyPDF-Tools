@@ -1,0 +1,67 @@
+# PyPDF-Stirling Tools v2 - Requirements
+# Core PDF processing libraries
+PyPDF2>=3.0.1
+PyMuPDF>=1.23.0
+reportlab>=4.0.4
+
+# Image processing
+Pillow>=10.0.0
+pdf2image>=1.16.3
+opencv-python>=4.8.0
+
+# OCR libraries
+pytesseract>=0.3.10
+
+# GUI libraries (tkinter is built-in)
+tkinterdnd2>=0.3.0
+
+# Document processing
+python-docx>=0.8.11
+openpyxl>=3.1.2
+
+# System integration
+pystray>=0.19.4
+psutil>=5.9.5
+
+# Network requests
+requests>=2.31.0
+
+# Compression and archive
+Pillow>=10.0.0
+
+# Optional dependencies for advanced features
+# Uncomment if needed
+
+# For enhanced image processing
+# scikit-image>=0.21.0
+# matplotlib>=3.7.0
+
+# For advanced PDF features
+# pdfplumber>=0.9.0
+# tabula-py>=2.7.0
+
+# For automation features
+# watchdog>=3.0.0
+# schedule>=1.2.0
+
+# For encryption
+# cryptography>=41.0.0
+
+# For email notifications
+# smtplib (built-in)
+# email (built-in)
+
+# Development dependencies (dev only)
+# pytest>=7.4.0
+# black>=23.7.0
+# flake8>=6.0.0
+# mypy>=1.5.0
+
+# Windows specific
+# pywin32>=306; sys_platform == "win32"
+
+# macOS specific
+# pyobjc>=9.2; sys_platform == "darwin"
+
+# Linux specific
+# python3-tk; sys_platform == "linux"
