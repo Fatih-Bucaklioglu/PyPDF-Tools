@@ -1,1 +1,843 @@
+name: Release Automation
 
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+      - 'v*.*.*-alpha*'
+      - 'v*.*.*-beta*'
+      - 'v*.*.*-rc*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g., v2.1.0)'
+        required: true
+      prerelease:
+        description: 'Mark as prerelease'
+        type: boolean
+        default: false
+      draft:
+        description: 'Create as draft release'
+        type: boolean
+        default: false
+
+env:
+  PYTHON_VERSION: '3.11'
+  NODE_VERSION: '18'
+
+jobs:
+  validate-release:
+    name: Validate Release
+    runs-on: ubuntu-22.04
+    outputs:
+      version: ${{ steps.version.outputs.VERSION }}
+      is-prerelease: ${{ steps.version.outputs.IS_PRERELEASE }}
+      release-notes: ${{ steps.notes.outputs.RELEASE_NOTES }}
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    
+    - name: Determine version
+      id: version
+      run: |
+        if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+          VERSION="${{ github.event.inputs.version }}"
+          IS_PRERELEASE="${{ github.event.inputs.prerelease }}"
+        else
+          VERSION="${GITHUB_REF#refs/tags/}"
+          if [[ "$VERSION" =~ (alpha|beta|rc) ]]; then
+            IS_PRERELEASE="true"
+          else
+            IS_PRERELEASE="false"
+          fi
+        fi
+        
+        echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+        echo "IS_PRERELEASE=$IS_PRERELEASE" >> $GITHUB_OUTPUT
+        
+        # Validate version format
+        if ! [[ "$VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9]+)?$ ]]; then
+          echo "Invalid version format: $VERSION"
+          exit 1
+        fi
+    
+    - name: Check if version already exists
+      run: |
+        if git tag -l | grep -q "^${{ steps.version.outputs.VERSION }}$"; then
+          echo "Version ${{ steps.version.outputs.VERSION }} already exists!"
+          exit 1
+        fi
+    
+    - name: Validate changelog
+      run: |
+        if [[ ! -f "CHANGELOG.md" ]]; then
+          echo "CHANGELOG.md not found!"
+          exit 1
+        fi
+        
+        # Check if changelog contains the version
+        if ! grep -q "${{ steps.version.outputs.VERSION }}" CHANGELOG.md; then
+          echo "Version ${{ steps.version.outputs.VERSION }} not found in CHANGELOG.md"
+          exit 1
+        fi
+    
+    - name: Generate release notes
+      id: notes
+      run: |
+        python scripts/generate_release_notes.py \
+          --version "${{ steps.version.outputs.VERSION }}" \
+          --output release-notes.md
+        
+        echo "RELEASE_NOTES<<EOF" >> $GITHUB_OUTPUT
+        cat release-notes.md >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
+    
+    - name: Upload release notes
+      uses: actions/upload-artifact@v3
+      with:
+        name: release-notes
+        path: release-notes.md
+        retention-days: 7
+
+  pre-release-tests:
+    name: Pre-Release Tests
+    needs: validate-release
+    uses: ./.github/workflows/tests.yml
+    secrets: inherit
+    with:
+      test_suite: 'all'
+
+  build-release-assets:
+    name: Build Release Assets
+    needs: [validate-release, pre-release-tests]
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-22.04
+            platform: linux
+            assets: [appimage, deb, rpm, tar.gz]
+          - os: windows-2022
+            platform: windows
+            assets: [msi, portable, chocolatey]
+          - os: macos-12
+            platform: macos
+            assets: [dmg, pkg]
+    
+    runs-on: ${{ matrix.os }}
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    
+    - name: Set up build environment
+      uses: ./.github/actions/setup-build-env
+      with:
+        platform: ${{ matrix.platform }}
+        python-version: ${{ env.PYTHON_VERSION }}
+    
+    - name: Build release assets
+      run: |
+        python build.py --platform ${{ matrix.platform }} --release --version ${{ needs.validate-release.outputs.version }}
+    
+    - name: Sign assets (Windows)
+      if: matrix.platform == 'windows' && secrets.WINDOWS_CERT_PASSWORD
+      run: |
+        # Sign Windows executables and MSI
+        $cert = '${{ secrets.WINDOWS_CERTIFICATE }}'
+        $certPath = 'cert.p12'
+        [System.Convert]::FromBase64String($cert) | Set-Content -Path $certPath -Encoding Byte
+        
+        Get-ChildItem -Path 'dist/' -Include '*.exe','*.msi' -Recurse | ForEach-Object {
+          signtool sign /f $certPath /p '${{ secrets.WINDOWS_CERT_PASSWORD }}' /t http://timestamp.comodoca.com /v $_.FullName
+        }
+    
+    - name: Sign assets (macOS)
+      if: matrix.platform == 'macos' && secrets.APPLE_DEVELOPER_ID
+      run: |
+        # Sign macOS applications
+        find dist/ -name "*.app" -exec codesign --force --verify --verbose --sign "${{ secrets.APPLE_DEVELOPER_ID }}" {} \;
+        find dist/ -name "*.dmg" -exec codesign --force --verify --verbose --sign "${{ secrets.APPLE_DEVELOPER_ID }}" {} \;
+        
+        # Notarize DMG
+        if [[ -n "${{ secrets.APPLE_ID }}" ]]; then
+          find dist/ -name "*.dmg" -exec xcrun notarytool submit {} \
+            --apple-id "${{ secrets.APPLE_ID }}" \
+            --password "${{ secrets.APPLE_PASSWORD }}" \
+            --team-id "${{ secrets.APPLE_TEAM_ID }}" \
+            --wait \;
+        fi
+    
+    - name: Generate checksums
+      run: |
+        cd dist/
+        find . -type f \( -name "*.msi" -o -name "*.dmg" -o -name "*.pkg" -o -name "*.deb" -o -name "*.rpm" -o -name "*.tar.gz" -o -name "*.zip" -o -name "*.AppImage" \) \
+          -exec sha256sum {} \; > SHA256SUMS-${{ matrix.platform }}.txt
+        find . -type f \( -name "*.msi" -o -name "*.dmg" -o -name "*.pkg" -o -name "*.deb" -o -name "*.rpm" -o -name "*.tar.gz" -o -name "*.zip" -o -name "*.AppImage" \) \
+          -exec md5sum {} \; > MD5SUMS-${{ matrix.platform }}.txt
+    
+    - name: Test built assets
+      run: |
+        python scripts/test_release_assets.py --platform ${{ matrix.platform }} --assets-dir dist/
+    
+    - name: Upload release assets
+      uses: actions/upload-artifact@v3
+      with:
+        name: release-assets-${{ matrix.platform }}
+        path: |
+          dist/
+          !dist/build/
+          !dist/temp/
+        retention-days: 30
+
+  security-scan:
+    name: Security Scan Release Assets
+    needs: build-release-assets
+    runs-on: ubuntu-22.04
+    
+    steps:
+    - name: Download all assets
+      uses: actions/download-artifact@v3
+      with:
+        path: assets/
+    
+    - name: Scan for malware
+      run: |
+        # Install ClamAV
+        sudo apt-get update
+        sudo apt-get install -y clamav clamav-daemon
+        sudo freshclam
+        
+        # Scan all assets
+        find assets/ -type f \( -name "*.exe" -o -name "*.msi" -o -name "*.dmg" -o -name "*.pkg" -o -name "*.deb" -o -name "*.rpm" -o -name "*.AppImage" \) \
+          -exec clamscan --verbose --infected {} \;
+    
+    - name: Check file signatures
+      run: |
+        # Verify signatures exist for signed platforms
+        echo "Checking file signatures..."
+        
+        # Windows files should be signed
+        if find assets/ -name "*.exe" -o -name "*.msi" | head -1 | xargs test -f; then
+          echo "Windows executables found - checking signatures"
+          # Note: Would need actual signature verification tool
+        fi
+        
+        # macOS files should be signed
+        if find assets/ -name "*.dmg" -o -name "*.pkg" | head -1 | xargs test -f; then
+          echo "macOS packages found - checking signatures"
+          # Note: Would need actual signature verification tool
+        fi
+    
+    - name: Upload security scan results
+      uses: actions/upload-artifact@v3
+      with:
+        name: security-scan-results
+        path: |
+          security-scan-*.log
+        retention-days: 30
+
+  create-github-release:
+    name: Create GitHub Release
+    needs: [validate-release, build-release-assets, security-scan]
+    runs-on: ubuntu-22.04
+    outputs:
+      release-id: ${{ steps.create-release.outputs.id }}
+      upload-url: ${{ steps.create-release.outputs.upload_url }}
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Download all assets
+      uses: actions/download-artifact@v3
+      with:
+        path: release-assets/
+    
+    - name: Download release notes
+      uses: actions/download-artifact@v3
+      with:
+        name: release-notes
+        path: ./
+    
+    - name: Organize assets
+      run: |
+        mkdir -p final-assets
+        
+        # Copy all release files
+        find release-assets/ -type f \( -name "*.msi" -o -name "*.dmg" -o -name "*.pkg" -o -name "*.deb" -o -name "*.rpm" -o -name "*.tar.gz" -o -name "*.zip" -o -name "*.AppImage" \) \
+          -exec cp {} final-assets/ \;
+        
+        # Copy checksum files
+        find release-assets/ -name "*SUMS*.txt" -exec cp {} final-assets/ \;
+        
+        # Generate combined checksums
+        cd final-assets/
+        sha256sum * > SHA256SUMS.txt
+        md5sum * > MD5SUMS.txt
+        
+        ls -la
+    
+    - name: Create GitHub Release
+      id: create-release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: ${{ needs.validate-release.outputs.version }}
+        name: PyPDF-Tools ${{ needs.validate-release.outputs.version }}
+        body_path: release-notes.md
+        draft: ${{ github.event.inputs.draft || false }}
+        prerelease: ${{ needs.validate-release.outputs.is-prerelease }}
+        generate_release_notes: true
+        discussion_category_name: Releases
+        files: final-assets/*
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  update-package-managers:
+    name: Update Package Managers
+    needs: [validate-release, create-github-release]
+    if: needs.validate-release.outputs.is-prerelease == 'false'
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        package-manager: [chocolatey, homebrew, aur, snap]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Update Chocolatey
+      if: matrix.package-manager == 'chocolatey'
+      env:
+        CHOCOLATEY_API_KEY: ${{ secrets.CHOCOLATEY_API_KEY }}
+      run: |
+        # Generate Chocolatey package
+        python scripts/update_chocolatey.py \
+          --version ${{ needs.validate-release.outputs.version }} \
+          --release-url ${{ steps.create-release.outputs.html_url }}
+        
+        # Push to Chocolatey
+        if [[ -n "$CHOCOLATEY_API_KEY" ]]; then
+          choco push *.nupkg --api-key "$CHOCOLATEY_API_KEY"
+        fi
+    
+    - name: Update Homebrew
+      if: matrix.package-manager == 'homebrew'
+      env:
+        HOMEBREW_GITHUB_API_TOKEN: ${{ secrets.HOMEBREW_TOKEN }}
+      run: |
+        # Clone homebrew tap
+        git clone https://github.com/Fatih-Bucaklioglu/homebrew-pypdf-tools.git
+        cd homebrew-pypdf-tools
+        
+        # Update formula
+        python ../scripts/update_homebrew.py \
+          --version ${{ needs.validate-release.outputs.version }}
+        
+        # Commit and push
+        git config user.name "Release Bot"
+        git config user.email "release-bot@pypdf-tools.com"
+        git add Formula/pypdf-tools.rb
+        git commit -m "Update PyPDF-Tools to ${{ needs.validate-release.outputs.version }}"
+        git push
+    
+    - name: Update AUR
+      if: matrix.package-manager == 'aur'
+      env:
+        AUR_PRIVATE_KEY: ${{ secrets.AUR_PRIVATE_KEY }}
+      run: |
+        # Setup SSH for AUR
+        mkdir -p ~/.ssh
+        echo "$AUR_PRIVATE_KEY" | base64 -d > ~/.ssh/aur_rsa
+        chmod 600 ~/.ssh/aur_rsa
+        ssh-keyscan -t rsa aur.archlinux.org >> ~/.ssh/known_hosts
+        
+        # Clone and update AUR package
+        git clone ssh://aur@aur.archlinux.org/pypdf-tools.git
+        cd pypdf-tools
+        
+        # Update PKGBUILD
+        python ../scripts/update_aur.py \
+          --version ${{ needs.validate-release.outputs.version }}
+        
+        # Generate .SRCINFO and commit
+        makepkg --printsrcinfo > .SRCINFO
+        git add PKGBUILD .SRCINFO
+        git commit -m "Update to ${{ needs.validate-release.outputs.version }}"
+        GIT_SSH_COMMAND="ssh -i ~/.ssh/aur_rsa" git push
+    
+    - name: Update Snap Store
+      if: matrix.package-manager == 'snap'
+      env:
+        SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_TOKEN }}
+      run: |
+        # Install snapcraft
+        sudo snap install snapcraft --classic
+        
+        # Build and publish snap
+        python scripts/build_snap.py --version ${{ needs.validate-release.outputs.version }}
+        snapcraft upload --release=stable *.snap
+
+  update-documentation:
+    name: Update Documentation
+    needs: [validate-release, create-github-release]
+    runs-on: ubuntu-22.04
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+    
+    - name: Update version in files
+      run: |
+        # Update version in pyproject.toml
+        sed -i 's/version = "[^"]*"/version = "${{ needs.validate-release.outputs.version }}"/g' pyproject.toml
+        
+        # Update version in __init__.py
+        sed -i 's/__version__ = "[^"]*"/__version__ = "${{ needs.validate-release.outputs.version }}"/g' src/pypdf_tools/__init__.py
+        
+        # Update README.md badges
+        python scripts/update_readme_badges.py --version ${{ needs.validate-release.outputs.version }}
+    
+    - name: Generate documentation
+      run: |
+        pip install -e .[docs]
+        cd docs/
+        sphinx-build -b html . _build/html
+    
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: docs/_build/html
+        destination_dir: ${{ needs.validate-release.outputs.version }}
+    
+    - name: Update latest docs symlink
+      if: needs.validate-release.outputs.is-prerelease == 'false'
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: docs/_build/html
+        destination_dir: latest
+
+  notify-release:
+    name: Notify Release
+    needs: [validate-release, create-github-release, update-package-managers]
+    if: always() && needs.create-github-release.result == 'success'
+    runs-on: ubuntu-22.04
+    
+    steps:
+    - name: Notify Discord
+      uses: sarisia/actions-status-discord@v1
+      with:
+        webhook: ${{ secrets.DISCORD_WEBHOOK }}
+        title: "🚀 PyPDF-Tools ${{ needs.validate-release.outputs.version }} Released!"
+        description: |
+          **New Release Available!**
+          
+          📦 **Version:** ${{ needs.validate-release.outputs.version }}
+          🏷️ **Type:** ${{ needs.validate-release.outputs.is-prerelease == 'true' && 'Pre-release' || 'Stable Release' }}
+          
+          **Quick Install:**
+          ```bash
+          # AppImage (Linux)
+          wget https://github.com/Fatih-Bucaklioglu/PyPDF-Tools/releases/latest/download/PyPDF-Tools.AppImage
+          
+          # Windows
+          winget install FatihBucaklioglu.PyPDFTools
+          
+          # macOS
+          brew install --cask pypdf-tools
+          ```
+          
+          [📥 Download Now](https://github.com/Fatih-Bucaklioglu/PyPDF-Tools/releases/tag/${{ needs.validate-release.outputs.version }})
+        color: 0x00ff00
+    
+    - name: Notify Slack
+      uses: 8398a7/action-slack@v3
+      with:
+        status: success
+        channel: '#releases'
+        webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+        custom_payload: |
+          {
+            "text": "🚀 New PyPDF-Tools Release!",
+            "blocks": [
+              {
+                "type": "header",
+                "text": {
+                  "type": "plain_text",
+                  "text": "PyPDF-Tools ${{ needs.validate-release.outputs.version }} Released! 🎉"
+                }
+              },
+              {
+                "type": "section",
+                "fields": [
+                  {
+                    "type": "mrkdwn",
+                    "text": "*Version:* ${{ needs.validate-release.outputs.version }}"
+                  },
+                  {
+                    "type": "mrkdwn", 
+                    "text": "*Type:* ${{ needs.validate-release.outputs.is-prerelease == 'true' && 'Pre-release' || 'Stable' }}"
+                  }
+                ]
+              },
+              {
+                "type": "actions",
+                "elements": [
+                  {
+                    "type": "button",
+                    "text": {
+                      "type": "plain_text",
+                      "text": "📥 Download"
+                    },
+                    "url": "https://github.com/Fatih-Bucaklioglu/PyPDF-Tools/releases/tag/${{ needs.validate-release.outputs.version }}"
+                  },
+                  {
+                    "type": "button",
+                    "text": {
+                      "type": "plain_text",
+                      "text": "📋 Release Notes"
+                    },
+                    "url": "https://github.com/Fatih-Bucaklioglu/PyPDF-Tools/releases/tag/${{ needs.validate-release.outputs.version }}"
+                  }
+                ]
+              }
+            ]
+          }
+    
+    - name: Send email notification
+      if: secrets.SMTP_PASSWORD
+      uses: dawidd6/action-send-mail@v3
+      with:
+        server_address: ${{ secrets.SMTP_SERVER }}
+        server_port: ${{ secrets.SMTP_PORT }}
+        username: ${{ secrets.SMTP_USERNAME }}
+        password: ${{ secrets.SMTP_PASSWORD }}
+        subject: "PyPDF-Tools ${{ needs.validate-release.outputs.version }} Released"
+        to: ${{ secrets.NOTIFICATION_EMAIL }}
+        from: "PyPDF-Tools Release Bot <noreply@pypdf-tools.com>"
+        html_body: |
+          <h2>🚀 PyPDF-Tools ${{ needs.validate-release.outputs.version }} Released!</h2>
+          
+          <p><strong>Version:</strong> ${{ needs.validate-release.outputs.version }}</p>
+          <p><strong>Type:</strong> ${{ needs.validate-release.outputs.is-prerelease == 'true' && 'Pre-release' || 'Stable Release' }}</p>
+          
+          <h3>Quick Install:</h3>
+          <pre>
+          # AppImage (Linux)
+          wget https://github.com/Fatih-Bucaklioglu/PyPDF-Tools/releases/latest/download/PyPDF-Tools.AppImage
+          
+          # Windows
+          winget install FatihBucaklioglu.PyPDFTools
+          
+          # macOS  
+          brew install --cask pypdf-tools
+          </pre>
+          
+          <p><a href="https://github.com/Fatih-Bucaklioglu/PyPDF-Tools/releases/tag/${{ needs.validate-release.outputs.version }}">📥 Download Now</a></p>
+    
+    - name: Update social media
+      run: |
+        # Create social media announcement
+        cat > social-announcement.md << EOF
+        🚀 PyPDF-Tools ${{ needs.validate-release.outputs.version }} is now available!
+        
+        ✨ Modern PDF processing with 50+ OCR languages
+        🔒 Advanced security & digital signatures  
+        ⚡ Batch processing & automation
+        🎨 4 beautiful themes
+        
+        Download: https://github.com/Fatih-Bucaklioglu/PyPDF-Tools/releases/latest
+        
+        #PyPDF #OpenSource #PDF #OCR #Productivity
+        EOF
+        
+        echo "Social media announcement created!"
+        cat social-announcement.md
+
+  post-release-tasks:
+    name: Post-Release Tasks
+    needs: [validate-release, create-github-release, notify-release]
+    if: always() && needs.create-github-release.result == 'success'
+    runs-on: ubuntu-22.04
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.PAT_TOKEN }}
+    
+    - name: Create next development version
+      if: needs.validate-release.outputs.is-prerelease == 'false'
+      run: |
+        # Extract version numbers
+        VERSION="${{ needs.validate-release.outputs.version }}"
+        CLEAN_VERSION=${VERSION#v}
+        
+        # Split version into components
+        IFS='.' read -ra VERSION_PARTS <<< "$CLEAN_VERSION"
+        MAJOR=${VERSION_PARTS[0]}
+        MINOR=${VERSION_PARTS[1]}
+        PATCH=${VERSION_PARTS[2]}
+        
+        # Increment minor version for next development
+        NEXT_MINOR=$((MINOR + 1))
+        NEXT_VERSION="v$MAJOR.$NEXT_MINOR.0-dev"
+        
+        echo "Next development version: $NEXT_VERSION"
+        
+        # Update version files
+        sed -i "s/version = \"[^\"]*\"/version = \"${NEXT_VERSION#v}\"/g" pyproject.toml
+        sed -i "s/__version__ = \"[^\"]*\"/__version__ = \"${NEXT_VERSION#v}\"/g" src/pypdf_tools/__init__.py
+        
+        # Update CHANGELOG.md
+        sed -i "1i\\## [$NEXT_VERSION] - TBD\n### Added\n### Changed\n### Fixed\n### Removed\n" CHANGELOG.md
+        
+        # Commit changes
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add pyproject.toml src/pypdf_tools/__init__.py CHANGELOG.md
+        git commit -m "chore: bump version to $NEXT_VERSION for development"
+        git push
+    
+    - name: Update project metadata
+      run: |
+        # Update GitHub repository topics/description
+        curl -X PATCH \
+          -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+          -H "Accept: application/vnd.github.v3+json" \
+          https://api.github.com/repos/${{ github.repository }} \
+          -d '{
+            "description": "Modern PDF processing application with OCR, security, and automation features. Latest: ${{ needs.validate-release.outputs.version }}",
+            "topics": ["pdf", "ocr", "python", "gui", "automation", "security", "cross-platform", "electron", "tesseract"]
+          }'
+    
+    - name: Create milestone for next release
+      if: needs.validate-release.outputs.is-prerelease == 'false'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const version = "${{ needs.validate-release.outputs.version }}";
+          const versionParts = version.replace('v', '').split('.');
+          const major = parseInt(versionParts[0]);
+          const minor = parseInt(versionParts[1]);
+          const patch = parseInt(versionParts[2]);
+          
+          const nextVersion = `v${major}.${minor + 1}.0`;
+          
+          try {
+            await github.rest.issues.createMilestone({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: nextVersion,
+              description: `Next minor release after ${version}`,
+              due_on: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString() // 90 days from now
+            });
+            console.log(`Created milestone: ${nextVersion}`);
+          } catch (error) {
+            console.log(`Failed to create milestone: ${error.message}`);
+          }
+    
+    - name: Close current milestone
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const version = "${{ needs.validate-release.outputs.version }}";
+          
+          const milestones = await github.rest.issues.listMilestones({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            state: 'open'
+          });
+          
+          const currentMilestone = milestones.data.find(m => m.title === version);
+          
+          if (currentMilestone) {
+            await github.rest.issues.updateMilestone({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              milestone_number: currentMilestone.number,
+              state: 'closed'
+            });
+            console.log(`Closed milestone: ${version}`);
+          }
+
+  analytics-tracking:
+    name: Analytics & Tracking
+    needs: [validate-release, create-github-release]
+    if: always() && needs.create-github-release.result == 'success'
+    runs-on: ubuntu-22.04
+    
+    steps:
+    - name: Track release metrics
+      uses: actions/github-script@v7
+      with:
+        script: |
+          // Track release in analytics (if configured)
+          const releaseData = {
+            version: "${{ needs.validate-release.outputs.version }}",
+            prerelease: ${{ needs.validate-release.outputs.is-prerelease }},
+            timestamp: new Date().toISOString(),
+            platform: "github",
+            repo: context.repo.full_name
+          };
+          
+          console.log("Release Analytics Data:", JSON.stringify(releaseData, null, 2));
+          
+          // Send to analytics service (if configured)
+          if (process.env.ANALYTICS_WEBHOOK) {
+            try {
+              const response = await fetch(process.env.ANALYTICS_WEBHOOK, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(releaseData)
+              });
+              console.log("Analytics sent successfully");
+            } catch (error) {
+              console.log("Failed to send analytics:", error.message);
+            }
+          }
+        env:
+          ANALYTICS_WEBHOOK: ${{ secrets.ANALYTICS_WEBHOOK }}
+    
+    - name: Update download statistics
+      run: |
+        # Create/update download tracking
+        mkdir -p .github/metrics
+        
+        cat > .github/metrics/release-${{ needs.validate-release.outputs.version }}.json << EOF
+        {
+          "version": "${{ needs.validate-release.outputs.version }}",
+          "release_date": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+          "prerelease": ${{ needs.validate-release.outputs.is-prerelease }},
+          "assets": [
+            $(curl -s https://api.github.com/repos/${{ github.repository }}/releases/tags/${{ needs.validate-release.outputs.version }} | jq '.assets[] | {name: .name, download_count: .download_count, size: .size}' | paste -sd ',' -)
+          ]
+        }
+        EOF
+
+  cleanup-and-summary:
+    name: Cleanup & Summary
+    needs: [validate-release, create-github-release, update-package-managers, notify-release, post-release-tasks]
+    if: always()
+    runs-on: ubuntu-22.04
+    
+    steps:
+    - name: Generate release summary
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const jobs = ${{ toJSON(needs) }};
+          
+          let summary = `# Release Summary: ${{ needs.validate-release.outputs.version || 'Unknown' }}\n\n`;
+          
+          // Job status summary
+          const jobResults = Object.entries(jobs).map(([name, job]) => ({
+            name: name.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+            status: job.result,
+            conclusion: job.conclusion || 'Not run'
+          }));
+          
+          summary += `## Job Status\n\n`;
+          summary += `| Job | Status |\n`;
+          summary += `|-----|--------|\n`;
+          
+          jobResults.forEach(job => {
+            const emoji = job.status === 'success' ? '✅' : 
+                         job.status === 'failure' ? '❌' : 
+                         job.status === 'skipped' ? '⏭️' : '⏸️';
+            summary += `| ${job.name} | ${emoji} ${job.status} |\n`;
+          });
+          
+          // Release info
+          if (jobs['validate-release']?.result === 'success') {
+            summary += `\n## Release Information\n\n`;
+            summary += `- **Version:** ${{ needs.validate-release.outputs.version }}\n`;
+            summary += `- **Type:** ${{ needs.validate-release.outputs.is-prerelease == 'true' && 'Pre-release' || 'Stable Release' }}\n`;
+            summary += `- **Release Date:** ${new Date().toISOString().split('T')[0]}\n`;
+          }
+          
+          // Success/failure counts
+          const successCount = jobResults.filter(j => j.status === 'success').length;
+          const failureCount = jobResults.filter(j => j.status === 'failure').length;
+          const skippedCount = jobResults.filter(j => j.status === 'skipped').length;
+          
+          summary += `\n## Statistics\n\n`;
+          summary += `- ✅ Successful: ${successCount}\n`;
+          summary += `- ❌ Failed: ${failureCount}\n`;
+          summary += `- ⏭️ Skipped: ${skippedCount}\n`;
+          summary += `- 📊 Total: ${jobResults.length}\n`;
+          
+          // Overall status
+          const overallSuccess = failureCount === 0;
+          summary += `\n## Overall Status: ${overallSuccess ? '✅ SUCCESS' : '❌ PARTIAL FAILURE'}\n`;
+          
+          if (jobs['create-github-release']?.result === 'success') {
+            summary += `\n🎉 **Release created successfully!**\n`;
+            summary += `📥 [Download PyPDF-Tools ${{ needs.validate-release.outputs.version }}](https://github.com/Fatih-Bucaklioglu/PyPDF-Tools/releases/tag/${{ needs.validate-release.outputs.version }})\n`;
+          }
+          
+          // Write to job summary
+          await core.summary
+            .addRaw(summary)
+            .write();
+          
+          console.log(summary);
+    
+    - name: Clean up artifacts
+      if: needs.create-github-release.result == 'success'
+      continue-on-error: true
+      uses: actions/github-script@v7
+      with:
+        script: |
+          // Clean up intermediate artifacts after successful release
+          const artifacts = await github.rest.actions.listWorkflowRunArtifacts({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            run_id: context.runId,
+          });
+          
+          const artifactsToKeep = ['release-assets', 'security-scan-results'];
+          const artifactsToDelete = artifacts.data.artifacts.filter(
+            artifact => !artifactsToKeep.some(keep => artifact.name.includes(keep))
+          );
+          
+          for (const artifact of artifactsToDelete.slice(0, 10)) { // Limit to 10 deletions
+            try {
+              await github.rest.actions.deleteArtifact({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                artifact_id: artifact.id
+              });
+              console.log(`Deleted artifact: ${artifact.name}`);
+            } catch (error) {
+              console.log(`Failed to delete artifact ${artifact.name}: ${error.message}`);
+            }
+          }
+    
+    - name: Report final status
+      run: |
+        echo "🏁 Release workflow completed!"
+        echo "📊 Check the job summary above for detailed results."
+        
+        if [[ "${{ needs.create-github-release.result }}" == "success" ]]; then
+          echo "✅ Release was created successfully!"
+          echo "🔗 Release URL: https://github.com/${{ github.repository }}/releases/tag/${{ needs.validate-release.outputs.version }}"
+        else
+          echo "❌ Release creation failed or was skipped."
+          exit 1
+        fi
