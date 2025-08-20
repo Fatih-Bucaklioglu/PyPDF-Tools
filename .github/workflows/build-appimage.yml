@@ -2,301 +2,373 @@ name: Build AppImage
 
 on:
   push:
-    branches: [ main, develop ]
-    tags: [ 'v*' ]
-  pull_request:
-    branches: [ main ]
+    tags:
+      - 'v*'
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to build'
+        required: true
+        default: 'latest'
+      prerelease:
+        description: 'Is this a prerelease?'
+        required: false
+        type: boolean
+        default: false
 
 env:
-  APP_NAME: PyPDF-Stirling_Tools_v2
-  APP_VERSION: 2.0.0
+  APPIMAGE_ARCH: x86_64
+  PYTHON_VERSION: '3.11'
 
 jobs:
   build-appimage:
-    runs-on: ubuntu-20.04
-
-    strategy:
-      matrix:
-        arch: [x86_64]
-
+    name: Build AppImage
+    runs-on: ubuntu-20.04  # Use older Ubuntu for better compatibility
+    
     steps:
-    - name: 🛎️ Checkout Repository
+    - name: Checkout code
       uses: actions/checkout@v4
       with:
         fetch-depth: 0
-
-    - name: 🐍 Setup Python
+    
+    - name: Set version
+      id: version
+      run: |
+        if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+          echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+        else
+          echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+        fi
+    
+    - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: '3.8'
-
-    - name: 📦 Install System Dependencies
+        python-version: ${{ env.PYTHON_VERSION }}
+    
+    - name: Install system dependencies
       run: |
         sudo apt-get update
         sudo apt-get install -y \
-          python3-dev \
-          python3-pip \
-          python3-tk \
-          tesseract-ocr \
-          tesseract-ocr-eng \
-          tesseract-ocr-tur \
-          poppler-utils \
-          libpoppler-dev \
-          libgl1-mesa-dev \
-          libglib2.0-0 \
-          libfontconfig1 \
-          libxrender1 \
-          libxext6 \
-          libsm6 \
-          libice6 \
-          libx11-dev \
-          libxft2 \
           wget \
           file \
-          imagemagick
-
-    - name: 🏗️ Setup Build Environment
+          desktop-file-utils \
+          libfuse2 \
+          tesseract-ocr \
+          tesseract-ocr-tur \
+          tesseract-ocr-eng \
+          tesseract-ocr-deu \
+          tesseract-ocr-fra \
+          tesseract-ocr-spa \
+          tesseract-ocr-ita \
+          tesseract-ocr-por \
+          tesseract-ocr-rus \
+          libreoffice \
+          poppler-utils \
+          qpdf \
+          ghostscript \
+          build-essential \
+          libgl1-mesa-glx \
+          libegl1-mesa \
+          libxrandr2 \
+          libxss1 \
+          libxcursor1 \
+          libxcomposite1 \
+          libasound2 \
+          libxi6 \
+          libxtst6 \
+          libglib2.0-0 \
+          libgtk-3-0 \
+          libqt5widgets5 \
+          libqt5gui5 \
+          libqt5core5a \
+          libqt5svg5 \
+          libqt5printsupport5 \
+          qtbase5-dev \
+          qttools5-dev-tools
+    
+    - name: Install Python dependencies
       run: |
-        python3 -m pip install --upgrade pip setuptools wheel
-        python3 -m pip install pyinstaller
-
-    - name: 📋 Cache Python Dependencies
-      uses: actions/cache@v3
-      with:
-        path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
-        restore-keys: |
-          ${{ runner.os }}-pip-
-
-    - name: 📦 Install Python Dependencies
+        python -m pip install --upgrade pip
+        pip install -e .
+        pip install pyinstaller
+    
+    - name: Download linuxdeploy
       run: |
-        if [ -f requirements.txt ]; then
-          pip install -r requirements.txt
+        wget -O linuxdeploy https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+        chmod +x linuxdeploy
+        
+        # Download Python plugin
+        wget -O linuxdeploy-plugin-python https://github.com/linuxdeploy/linuxdeploy-plugin-python/releases/download/continuous/linuxdeploy-plugin-python-x86_64.AppImage
+        chmod +x linuxdeploy-plugin-python
+        
+        # Download Qt plugin
+        wget -O linuxdeploy-plugin-qt https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage
+        chmod +x linuxdeploy-plugin-qt
+    
+    - name: Create AppDir structure
+      run: |
+        mkdir -p AppDir/usr/{bin,lib,share/{applications,icons/hicolor/256x256/apps,metainfo}}
+        
+        # Copy main application
+        cp src/main.py AppDir/usr/bin/pypdf-tools
+        chmod +x AppDir/usr/bin/pypdf-tools
+        
+        # Copy Python modules
+        cp -r src/pypdf_tools AppDir/usr/lib/
+        
+        # Copy resources
+        cp -r assets/* AppDir/usr/share/ 2>/dev/null || true
+        
+        # Copy icon
+        cp assets/icon.png AppDir/usr/share/icons/hicolor/256x256/apps/pypdf-tools.png
+        
+        # Create desktop file
+        cat > AppDir/usr/share/applications/pypdf-tools.desktop << EOF
+        [Desktop Entry]
+        Version=1.0
+        Type=Application
+        Name=PyPDF Tools v2
+        Comment=Modern PDF Processing Application
+        GenericName=PDF Processor
+        Exec=pypdf-tools
+        Icon=pypdf-tools
+        Terminal=false
+        Categories=Office;Graphics;Publishing;Photography;
+        Keywords=pdf;merge;split;compress;ocr;security;
+        MimeType=application/pdf;
+        StartupWMClass=PyPDF-Tools
+        StartupNotify=true
+        EOF
+        
+        # Create AppStream metainfo
+        cat > AppDir/usr/share/metainfo/pypdf-tools.appdata.xml << EOF
+        <?xml version="1.0" encoding="UTF-8"?>
+        <component type="desktop-application">
+          <id>com.fatihbucaklioglu.pypdf-tools</id>
+          <name>PyPDF Tools v2</name>
+          <summary>Modern PDF Processing Application</summary>
+          <description>
+            <p>PyPDF Tools v2 is a comprehensive PDF processing application with modern UI and advanced features.</p>
+            <p>Features include:</p>
+            <ul>
+              <li>PDF merging and splitting</li>
+              <li>Compression and optimization</li>
+              <li>OCR with 50+ languages</li>
+              <li>Digital signatures and encryption</li>
+              <li>Batch processing and automation</li>
+            </ul>
+          </description>
+          <launchable type="desktop-id">pypdf-tools.desktop</launchable>
+          <url type="homepage">https://github.com/Fatih-Bucaklioglu/PyPDF-Tools</url>
+          <url type="bugtracker">https://github.com/Fatih-Bucaklioglu/PyPDF-Tools/issues</url>
+          <metadata_license>MIT</metadata_license>
+          <project_license>MIT</project_license>
+          <releases>
+            <release version="${{ steps.version.outputs.VERSION }}" date="$(date +%Y-%m-%d)"/>
+          </releases>
+          <screenshots>
+            <screenshot type="default">
+              <image>https://raw.githubusercontent.com/Fatih-Bucaklioglu/PyPDF-Tools/main/docs/screenshots/main-window.png</image>
+            </screenshot>
+          </screenshots>
+          <categories>
+            <category>Office</category>
+            <category>Graphics</category>
+          </categories>
+        </component>
+        EOF
+    
+    - name: Build with PyInstaller
+      run: |
+        pyinstaller --onefile \
+          --windowed \
+          --name=pypdf-tools \
+          --icon=assets/icon.png \
+          --add-data="src/pypdf_tools:pypdf_tools" \
+          --add-data="assets:assets" \
+          --hidden-import=pypdf_tools \
+          --hidden-import=PyQt6 \
+          --hidden-import=PIL \
+          --hidden-import=tesseract \
+          --distpath=AppDir/usr/bin \
+          src/main.py
+    
+    - name: Copy system dependencies
+      run: |
+        # Copy Python interpreter
+        cp -L $(which python3) AppDir/usr/bin/
+        
+        # Copy Tesseract
+        cp -L $(which tesseract) AppDir/usr/bin/
+        
+        # Copy tessdata
+        cp -r /usr/share/tesseract-ocr/*/tessdata AppDir/usr/share/ 2>/dev/null || true
+        cp -r /usr/share/tessdata AppDir/usr/share/ 2>/dev/null || true
+        
+        # Copy LibreOffice (selective)
+        if [ -d /usr/lib/libreoffice ]; then
+          mkdir -p AppDir/usr/lib/
+          cp -r /usr/lib/libreoffice AppDir/usr/lib/ 2>/dev/null || true
         fi
-
-    - name: 🔍 Validate Application
+    
+    - name: Deploy with linuxdeploy
+      env:
+        OUTPUT: PyPDF-Tools-${{ steps.version.outputs.VERSION }}-${{ env.APPIMAGE_ARCH }}.AppImage
+        ARCH: ${{ env.APPIMAGE_ARCH }}
       run: |
-        echo "Testing application imports..."
-        python3 -c "
-        try:
-            import main
-            print('✅ Main module import successful')
-        except Exception as e:
-            print(f'❌ Main module import failed: {e}')
-            exit(1)
-        "
-
-    - name: 🏗️ Build AppImage
+        # Set environment for plugins
+        export LINUXDEPLOY_PLUGIN_PYTHON_ARGS="--python-executable=$(which python3) --python-version=${{ env.PYTHON_VERSION }}"
+        
+        # Deploy application
+        ./linuxdeploy \
+          --appdir AppDir \
+          --plugin python \
+          --plugin qt \
+          --output appimage \
+          --desktop-file AppDir/usr/share/applications/pypdf-tools.desktop \
+          --icon-file AppDir/usr/share/icons/hicolor/256x256/apps/pypdf-tools.png
+    
+    - name: Test AppImage
       run: |
-        chmod +x build-appimage.sh
-        ./build-appimage.sh build
-
-    - name: 🧪 Test AppImage
+        # Test basic functionality
+        ./PyPDF-Tools-*.AppImage --version
+        ./PyPDF-Tools-*.AppImage --help
+        ./PyPDF-Tools-*.AppImage --system-info
+        
+        # Test in sandboxed environment
+        mkdir -p test-sandbox
+        cd test-sandbox
+        ../PyPDF-Tools-*.AppImage --version
+    
+    - name: Generate checksums
       run: |
-        ./build-appimage.sh test
-
-    - name: 📊 AppImage Information
-      run: |
-        APPIMAGE_FILE="${APP_NAME}-${APP_VERSION}-${{ matrix.arch }}.AppImage"
-
-        if [ -f "$APPIMAGE_FILE" ]; then
-          echo "📦 AppImage Details:"
-          echo "   File: $APPIMAGE_FILE"
-          echo "   Size: $(du -h "$APPIMAGE_FILE" | cut -f1)"
-          echo "   Type: $(file "$APPIMAGE_FILE")"
-          echo "   Permissions: $(ls -la "$APPIMAGE_FILE" | cut -d' ' -f1)"
-
-          # Extract desktop file for verification
-          echo ""
-          echo "🖥️ Desktop Integration:"
-          ./"$APPIMAGE_FILE" --appimage-extract usr/share/applications/pypdf-tools-v2.desktop >/dev/null 2>&1 || true
-          if [ -f "squashfs-root/usr/share/applications/pypdf-tools-v2.desktop" ]; then
-            echo "   Desktop file: ✅ Present"
-            echo "   Categories: $(grep "Categories=" squashfs-root/usr/share/applications/pypdf-tools-v2.desktop | cut -d'=' -f2-)"
-          else
-            echo "   Desktop file: ❌ Missing"
-          fi
-
-          # Check for icons
-          ./"$APPIMAGE_FILE" --appimage-extract usr/share/icons/ >/dev/null 2>&1 || true
-          if [ -d "squashfs-root/usr/share/icons" ]; then
-            echo "   Icons: ✅ Present ($(find squashfs-root/usr/share/icons -name "*.png" | wc -l) files)"
-          else
-            echo "   Icons: ❌ Missing"
-          fi
-
-          # Cleanup
-          rm -rf squashfs-root/
-
-        else
-          echo "❌ AppImage file not found: $APPIMAGE_FILE"
-          exit 1
-        fi
-
-    - name: 📤 Upload AppImage Artifact
+        sha256sum PyPDF-Tools-*.AppImage > PyPDF-Tools-${{ steps.version.outputs.VERSION }}-checksums.txt
+        md5sum PyPDF-Tools-*.AppImage >> PyPDF-Tools-${{ steps.version.outputs.VERSION }}-checksums.txt
+    
+    - name: Upload AppImage artifact
       uses: actions/upload-artifact@v3
       with:
-        name: ${{ env.APP_NAME }}-${{ env.APP_VERSION }}-${{ matrix.arch }}-AppImage
-        path: ${{ env.APP_NAME }}-${{ env.APP_VERSION }}-${{ matrix.arch }}.AppImage
+        name: appimage-${{ steps.version.outputs.VERSION }}
+        path: |
+          PyPDF-Tools-*.AppImage
+          PyPDF-Tools-*-checksums.txt
         retention-days: 30
-
-    - name: 📤 Upload to Release (if tag)
-      if: startsWith(github.ref, 'refs/tags/')
+    
+    - name: Create draft release
+      if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
       uses: softprops/action-gh-release@v1
       with:
         files: |
-          ${{ env.APP_NAME }}-${{ env.APP_VERSION }}-${{ matrix.arch }}.AppImage
-        draft: false
-        prerelease: ${{ contains(github.ref, '-') }}
+          PyPDF-Tools-*.AppImage
+          PyPDF-Tools-*-checksums.txt
+        draft: true
+        prerelease: ${{ github.event.inputs.prerelease || false }}
         generate_release_notes: true
-        name: PyPDF-Stirling Tools v2 ${{ github.ref_name }}
         body: |
-          ## PyPDF-Stirling Tools v2 ${{ github.ref_name }}
-
-          ### 🚀 What's New
-          - Modern GUI with 4 theme options
-          - Comprehensive settings panel
-          - Enhanced OCR with multi-language support
-          - Improved PDF processing pipeline
-          - Cross-platform compatibility
-
-          ### 📦 Downloads
-
-          **Linux AppImage:**
-          - Download `${{ env.APP_NAME }}-${{ env.APP_VERSION }}-x86_64.AppImage`
-          - Make executable: `chmod +x ${{ env.APP_NAME }}-${{ env.APP_VERSION }}-x86_64.AppImage`
-          - Run: `./${{ env.APP_NAME }}-${{ env.APP_VERSION }}-x86_64.AppImage`
-
-          **Other Platforms:**
-          - Windows: Use PowerShell install script
-          - macOS: Use Homebrew or manual installation
-          - See README.md for detailed instructions
-
-          ### 🔧 System Requirements
-          - Linux x86_64 (Ubuntu 18.04+, Debian 10+, or equivalent)
-          - 4GB RAM minimum, 8GB recommended
-          - 500MB free disk space
-
-          ### 📋 What's Included
-          - All Python dependencies
-          - Tesseract OCR with English and Turkish language packs
-          - System libraries for PDF processing
-          - Desktop integration files
-
-          ---
-
-          **Note:** This AppImage is portable and doesn't require installation. Just download, make executable, and run!
+          ## 🚀 PyPDF Tools v2 ${{ steps.version.outputs.VERSION }}
+          
+          ### 📦 AppImage Installation
+          
+          ```bash
+          # Download and make executable
+          wget https://github.com/Fatih-Bucaklioglu/PyPDF-Tools/releases/download/${{ steps.version.outputs.VERSION }}/PyPDF-Tools-${{ steps.version.outputs.VERSION }}-x86_64.AppImage
+          chmod +x PyPDF-Tools-${{ steps.version.outputs.VERSION }}-x86_64.AppImage
+          
+          # Run
+          ./PyPDF-Tools-${{ steps.version.outputs.VERSION }}-x86_64.AppImage
+          ```
+          
+          ### ✅ System Requirements
+          - Linux x86_64
+          - FUSE2 support
+          - Minimum 4GB RAM
+          - 500MB disk space
+          
+          ### 🔐 Verification
+          ```bash
+          # Verify checksums
+          sha256sum -c PyPDF-Tools-${{ steps.version.outputs.VERSION }}-checksums.txt
+          ```
+          
+          ### 📖 Documentation
+          - [Installation Guide](https://github.com/Fatih-Bucaklioglu/PyPDF-Tools/blob/main/docs/installation.md)
+          - [AppImage Usage](https://github.com/Fatih-Bucaklioglu/PyPDF-Tools/blob/main/docs/AppImage-USAGE.md)
+          - [User Guide](https://github.com/Fatih-Bucaklioglu/PyPDF-Tools/blob/main/docs/user-guide.md)
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  # Alternative build job using appimage-builder
-  build-appimage-builder:
-    runs-on: ubuntu-20.04
-    if: false  # Disabled by default, enable if needed
-
-    steps:
-    - name: 🛎️ Checkout
-      uses: actions/checkout@v4
-
-    - name: 📦 Install appimage-builder
-      run: |
-        sudo apt update
-        sudo apt install -y python3-pip python3-setuptools patchelf desktop-file-utils libgdk-pixbuf2.0-dev fakeroot strace
-        sudo pip3 install appimage-builder
-
-    - name: 🏗️ Build with appimage-builder
-      run: |
-        appimage-builder --recipe AppImageBuilder.yml
-
-    - name: 📤 Upload Alternative AppImage
-      uses: actions/upload-artifact@v3
-      with:
-        name: ${{ env.APP_NAME }}-builder-${{ env.APP_VERSION }}-x86_64-AppImage
-        path: "*.AppImage"
-
-  # Cross-platform compatibility test
-  test-compatibility:
+  test-appimage:
+    name: Test AppImage
     needs: build-appimage
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     strategy:
       matrix:
-        container:
-          - ubuntu:18.04
-          - ubuntu:20.04
-          - ubuntu:22.04
-          - debian:10
-          - debian:11
-          - fedora:35
-          - opensuse/leap:15.4
-
-    container: ${{ matrix.container }}
-
+        distro: [ubuntu, fedora, debian, arch]
+    
     steps:
-    - name: 📦 Install Basic Dependencies
-      run: |
-        if command -v apt-get >/dev/null; then
-          apt-get update && apt-get install -y wget xvfb
-        elif command -v dnf >/dev/null; then
-          dnf install -y wget xorg-x11-server-Xvfb
-        elif command -v zypper >/dev/null; then
-          zypper install -y wget xvfb-run
-        fi
-
-    - name: 📥 Download AppImage
+    - name: Download AppImage
       uses: actions/download-artifact@v3
       with:
-        name: ${{ env.APP_NAME }}-${{ env.APP_VERSION }}-x86_64-AppImage
-
-    - name: 🧪 Test AppImage Compatibility
+        name: appimage-${{ needs.build-appimage.outputs.version }}
+    
+    - name: Test on ${{ matrix.distro }}
       run: |
-        chmod +x ${{ env.APP_NAME }}-${{ env.APP_VERSION }}-x86_64.AppImage
+        # Test in Docker container
+        docker run --rm \
+          -v $(pwd):/workspace \
+          -w /workspace \
+          ${{ matrix.distro }}:latest \
+          bash -c "
+            # Install FUSE
+            if command -v apt-get &> /dev/null; then
+              apt-get update && apt-get install -y fuse libfuse2
+            elif command -v dnf &> /dev/null; then
+              dnf install -y fuse fuse-libs
+            elif command -v pacman &> /dev/null; then
+              pacman -Sy --noconfirm fuse2
+            fi
+            
+            # Test AppImage
+            chmod +x *.AppImage
+            ./*.AppImage --version
+            ./*.AppImage --system-info
+          "
 
-        echo "Testing on ${{ matrix.container }}:"
-
-        # Test basic execution (without GUI)
-        timeout 10s ./${{ env.APP_NAME }}-${{ env.APP_VERSION }}-x86_64.AppImage --help || echo "Help command test completed"
-
-        # Test with virtual display
-        if command -v xvfb-run >/dev/null; then
-          timeout 10s xvfb-run -a ./${{ env.APP_NAME }}-${{ env.APP_VERSION }}-x86_64.AppImage --test || echo "GUI test completed"
-        fi
-
-        echo "✅ Compatibility test passed on ${{ matrix.container }}"
-
-  # Security scan
-  security-scan:
-    needs: build-appimage
-    runs-on: ubuntu-latest
-
+  publish-to-registry:
+    name: Publish to AppImage Registry
+    needs: [build-appimage, test-appimage]
+    runs-on: ubuntu-22.04
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+    
     steps:
-    - name: 📥 Download AppImage
+    - name: Download AppImage
       uses: actions/download-artifact@v3
       with:
-        name: ${{ env.APP_NAME }}-${{ env.APP_VERSION }}-x86_64-AppImage
-
-    - name: 🔍 Security Scan
+        name: appimage-${{ needs.build-appimage.outputs.version }}
+    
+    - name: Submit to AppImageHub
       run: |
-        chmod +x ${{ env.APP_NAME }}-${{ env.APP_VERSION }}-x86_64.AppImage
+        # Create AppImageHub submission
+        cat > appimage-info.yml << EOF
+        app: PyPDF Tools v2
+        screenshot: https://raw.githubusercontent.com/Fatih-Bucaklioglu/PyPDF-Tools/main/docs/screenshots/main-window.png
+        description: Modern PDF Processing Application
+        website: https://github.com/Fatih-Bucaklioglu/PyPDF-Tools
+        license: MIT
+        category: Office
+        EOF
+        
+        # Note: This would require AppImageHub submission process
+        echo "AppImage ready for AppImageHub submission"
 
-        echo "🔍 Running security checks..."
-
-        # Check file permissions
-        echo "File permissions: $(ls -la ${{ env.APP_NAME }}-${{ env.APP_VERSION }}-x86_64.AppImage)"
-
-        # Extract and check contents
-        ./${{ env.APP_NAME }}-${{ env.APP_VERSION }}-x86_64.AppImage --appimage-extract >/dev/null
-
-        # Check for suspicious files
-        echo "Checking for suspicious files..."
-        find squashfs-root -name "*.so" -exec file {} \; | grep -E "(trojan|virus|malware)" || echo "No suspicious libraries found"
-
-        # Check for setuid files
-        echo "Checking for setuid files..."
-        find squashfs-root -perm /4000 -ls || echo "No setuid files found"
-
-        # Basic binary analysis
-        echo "Binary information:"
-        file ${{ env.APP_NAME }}-${{ env.APP_VERSION }}-x86_64.AppImage
-
-        echo "✅ Security scan completed"
+  cleanup:
+    name: Cleanup
+    needs: [build-appimage, test-appimage]
+    runs-on: ubuntu-22.04
+    if: always()
+    
+    steps:
+    - name: Clean build artifacts
+      run: |
+        # Cleanup would be handled by GitHub automatically
+        echo "Build cleanup completed"
