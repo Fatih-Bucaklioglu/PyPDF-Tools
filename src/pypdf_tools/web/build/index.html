@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="tr">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="./favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <meta name="description" content="PyPDF-Tools - Modern PDF Yönetim Uygulaması" />
+    
+    <!-- PDF.js CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    </script>
+    
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Minified CSS (production) -->
+    <link href="./static/css/main.css" rel="stylesheet">
+    
+    <title>PyPDF-Tools</title>
+  </head>
+  <body>
+    <noscript>PyPDF-Tools çalıştırmak için JavaScript etkinleştirilmelidir.</noscript>
+    <div id="root">
+      <div style="display: flex; align-items: center; justify-content: center; height: 100vh; flex-direction: column; gap: 20px;">
+        <div class="loading-spinner"></div>
+        <p style="color: var(--text-secondary); font-size: 14px;">PyPDF-Tools yükleniyor...</p>
+      </div>
+    </div>
+    
+    <!-- QWebChannel Integration Script -->
+    <script>
+      window.pypdfTools = {
+        bridge: null,
+        isQtEnvironment: typeof qt !== 'undefined',
+        
+        onBridgeReady: function(bridge) {
+          window.pypdfTools.bridge = bridge;
+          console.log('PyPDF-Tools bridge ready');
+          
+          if (window.ReactApp && window.ReactApp.onBridgeReady) {
+            window.ReactApp.onBridgeReady(bridge);
+          }
+        },
+        
+        sendToolAction: function(toolId, data) {
+          if (this.bridge && this.bridge.onToolAction) {
+            const actionData = JSON.stringify({ toolId, data });
+            return this.bridge.onToolAction(actionData);
+          }
+          return Promise.resolve('{"success": false, "error": "Bridge not available"}');
+        },
+        
+        notifyPageChange: function(pageNumber) {
+          if (this.bridge && this.bridge.onPageChange) {
+            this.bridge.onPageChange(JSON.stringify({ page: pageNumber }));
+          }
+        },
+        
+        notifyAnnotationAdd: function(annotation) {
+          if (this.bridge && this.bridge.onAnnotationAdd) {
+            this.bridge.onAnnotationAdd(JSON.stringify(annotation));
+          }
+        }
+      };
+      
+      if (window.pypdfTools.isQtEnvironment) {
+        new QWebChannel(qt.webChannelTransport, function(channel) {
+          const bridge = channel.objects.pdfBridge;
+          window.pypdfTools.onBridgeReady(bridge);
+          
+          if (bridge.pdfDataChanged) {
+            bridge.pdfDataChanged.connect(function(pdfData) {
+              const data = JSON.parse(pdfData);
+              if (window.ReactApp && window.ReactApp.onPdfDataChanged) {
+                window.ReactApp.onPdfDataChanged(data);
+              }
+            });
+          }
+          
+          if (bridge.themeChanged) {
+            bridge.themeChanged.connect(function(theme) {
+              document.documentElement.setAttribute('data-theme', theme);
+              if (window.ReactApp && window.ReactApp.onThemeChanged) {
+                window.ReactApp.onThemeChanged(theme);
+              }
+            });
+          }
+          
+          if (bridge.settingsChanged) {
+            bridge.settingsChanged.connect(function(settings) {
+              const data = JSON.parse(settings);
+              if (window.ReactApp && window.ReactApp.onSettingsChanged) {
+                window.ReactApp.onSettingsChanged(data);
+              }
+            });
+          }
+        });
+      } else {
+        console.log('Running in standalone web mode');
+        setTimeout(() => {
+          window.pypdfTools.onBridgeReady({
+            onToolAction: (data) => {
+              console.log('Mock tool action:', data);
+              return '{"success": true, "result": "Mock execution"}';
+            },
+            onPageChange: (data) => console.log('Mock page change:', data),
+            onAnnotationAdd: (data) => console.log('Mock annotation add:', data)
+          });
+        }, 100);
+      }
+    </script>
+    
+    <!-- Production React Bundle -->
+    <script defer src="./static/js/main.js"></script>
+  </body>
+</html>
