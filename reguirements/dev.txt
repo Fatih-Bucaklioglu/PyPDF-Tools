@@ -1,1 +1,54 @@
-a
+# Development Requirements
+# Additional packages needed for development
+
+# Include base requirements
+-r ../requirements.txt
+
+# Testing framework
+pytest>=7.0.0,<8.0.0
+pytest-qt>=4.0.0,<5.0.0
+pytest-cov>=3.0.0,<5.0.0
+pytest-xvfb>=3.0.0,<4.0.0
+pytest-mock>=3.10.0,<4.0.0
+pytest-benchmark>=4.0.0,<5.0.0
+
+# Code quality tools
+black>=22.0.0,<24.0.0
+isort>=5.10.0,<6.0.0
+flake8>=4.0.0,<7.0.0
+mypy>=0.950,<2.0.0
+pylint>=2.15.0,<4.0.0
+
+# Documentation tools
+sphinx>=5.0.0,<8.0.0
+sphinx-rtd-theme>=1.0.0,<3.0.0
+sphinx-autodoc-typehints>=1.19.0,<2.0.0
+myst-parser>=0.18.0,<3.0.0
+
+# Build tools
+build>=0.8.0,<2.0.0
+wheel>=0.37.0,<1.0.0
+twine>=4.0.0,<5.0.0
+
+# Development utilities
+pre-commit>=2.20.0,<4.0.0
+tox>=3.25.0,<5.0.0
+bump2version>=1.0.0,<2.0.0
+
+# Security tools
+safety>=2.0.0,<3.0.0
+bandit>=1.7.0,<2.0.0
+pip-audit>=2.0.0,<3.0.0
+
+# Performance profiling
+memory-profiler>=0.60.0,<1.0.0
+pympler>=0.9,<1.0
+line-profiler>=3.5.0,<5.0.0
+
+# Debugging tools
+ipdb>=0.13.0,<1.0.0
+pdbpp>=0.10.0,<1.0.0
+
+# Development servers and tools
+watchdog>=2.1.0,<4.0.0
+python-dotenv>=0.19.0,<2.0.0
