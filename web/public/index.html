@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="tr">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <meta name="description" content="PyPDF-Tools - Modern PDF Yönetim Uygulaması" />
+    
+    <!-- PDF.js CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>
+      // PDF.js worker konfigürasyonu
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    </script>
+    
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Theme CSS Variables -->
+    <style>
+      :root {
+        /* Light Theme */
+        --bg-primary: #ffffff;
+        --bg-secondary: #f8f9fa;
+        --bg-tertiary: #e9ecef;
+        --text-primary: #212529;
+        --text-secondary: #6c757d;
+        --accent: #0d6efd;
+        --accent-hover: #0b5ed7;
+        --border: #dee2e6;
+        --shadow: rgba(0, 0, 0, 0.1);
+        --success: #198754;
+        --danger: #dc3545;
+        --warning: #ffc107;
+      }
+      
+      [data-theme="dark"] {
+        --bg-primary: #212529;
+        --bg-secondary: #343a40;
+        --bg-tertiary: #495057;
+        --text-primary: #f8f9fa;
+        --text-secondary: #adb5bd;
+        --accent: #0d6efd;
+        --accent-hover: #3d8bfd;
+        --border: #495057;
+        --shadow: rgba(0, 0, 0, 0.3);
+        --success: #20c997;
+        --danger: #fd7e14;
+        --warning: #ffc107;
+      }
+      
+      [data-theme="neon"] {
+        --bg-primary: #0a0a0a;
+        --bg-secondary: #1a1a2e;
+        --bg-tertiary: #16213e;
+        --text-primary: #00ffff;
+        --text-secondary: #7fffd4;
+        --accent: #ff00ff;
+        --accent-hover: #ff3dff;
+        --border: #00ffff;
+        --shadow: rgba(0, 255, 255, 0.3);
+        --success: #00ff00;
+        --danger: #ff1744;
+        --warning: #ffff00;
+      }
+      
+      [data-theme="midnight"] {
+        --bg-primary: #0f1419;
+        --bg-secondary: #1e2328;
+        --bg-tertiary: #2d3748;
+        --text-primary: #e2e8f0;
+        --text-secondary: #a0aec0;
+        --accent: #3182ce;
+        --accent-hover: #4299e1;
+        --border: #4a5568;
+        --shadow: rgba(0, 0, 0, 0.4);
+        --success: #38a169;
+        --danger: #e53e3e;
+        --warning: #d69e2e;
+      }
+      
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      
+      body {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+        background-color: var(--bg-primary);
+        color: var(--text-primary);
+        overflow: hidden;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+      }
+      
+      #root {
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+      
+      /* Scrollbar Styling */
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+      
+      ::-webkit-scrollbar-track {
+        background: var(--bg-secondary);
+      }
+      
+      ::-webkit-scrollbar-thumb {
+        background: var(--text-secondary);
+        border-radius: 4px;
+      }
+      
+      ::-webkit-scrollbar-thumb:hover {
+        background: var(--text-primary);
+      }
+      
+      /* Loading animation */
+      .loading-spinner {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 2px solid var(--text-secondary);
+        border-radius: 50%;
+        border-top-color: var(--accent);
+        animation: spin 1s ease-in-out infinite;
+      }
+      
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+      
+      /* QWebEngineView integration */
+      .qt-integration {
+        /* PyQt6 WebEngine için özel stiller */
+        -webkit-app-region: no-drag;
+      }
+      
+      /* Print styles */
+      @media print {
+        body * {
+          visibility: hidden;
+        }
+        
+        .printable, .printable * {
+          visibility: visible;
+        }
+        
+        .printable {
+          position: absolute;
+          left: 0;
+          top: 0;
+          width: 100% !important;
+          height: 100% !important;
+        }
+      }
+    </style>
+    
+    <title>PyPDF-Tools</title>
+  </head>
+  <body>
+    <noscript>PyPDF-Tools çalıştırmak için JavaScript etkinleştirilmelidir.</noscript>
+    <div id="root">
+      <!-- React uygulaması buraya mount edilecek -->
+      <div style="
+        display: flex; 
+        align-items: center; 
+        justify-content: center; 
+        height: 100vh;
+        flex-direction: column;
+        gap: 20px;
+      ">
+        <div class="loading-spinner"></div>
+        <p style="color: var(--text-secondary); font-size: 14px;">PyPDF-Tools yükleniyor...</p>
+      </div>
+    </div>
+    
+    <!-- QWebChannel Integration Script -->
+    <script>
+      // PyQt6 QWebChannel entegrasyonu için
+      window.pypdfTools = {
+        bridge: null,
+        isQtEnvironment: typeof qt !== 'undefined',
+        
+        // QWebChannel bağlantısı kurulduğunda çağrılır
+        onBridgeReady: function(bridge) {
+          window.pypdfTools.bridge = bridge;
+          console.log('PyPDF-Tools bridge ready');
+          
+          // React uygulamasına bridge hazır sinyali gönder
+          if (window.ReactApp && window.ReactApp.onBridgeReady) {
+            window.ReactApp.onBridgeReady(bridge);
+          }
+        },
+        
+        // Tool action'ı Python'a gönder
+        sendToolAction: function(toolId, data) {
+          if (this.bridge && this.bridge.onToolAction) {
+            const actionData = JSON.stringify({ toolId, data });
+            return this.bridge.onToolAction(actionData);
+          }
+          return Promise.resolve('{"success": false, "error": "Bridge not available"}');
+        },
+        
+        // Sayfa değişikliğini bildir
+        notifyPageChange: function(pageNumber) {
+          if (this.bridge && this.bridge.onPageChange) {
+            this.bridge.onPageChange(JSON.stringify({ page: pageNumber }));
+          }
+        },
+        
+        // Annotation eklendiğini bildir
+        notifyAnnotationAdd: function(annotation) {
+          if (this.bridge && this.bridge.onAnnotationAdd) {
+            this.bridge.onAnnotationAdd(JSON.stringify(annotation));
+          }
+        }
+      };
+      
+      // QWebChannel kurulumu (PyQt6 ortamında)
+      if (window.pypdfTools.isQtEnvironment) {
+        new QWebChannel(qt.webChannelTransport, function(channel) {
+          const bridge = channel.objects.pdfBridge;
+          window.pypdfTools.onBridgeReady(bridge);
+          
+          // Python'dan gelen sinyalleri dinle
+          if (bridge.pdfDataChanged) {
+            bridge.pdfDataChanged.connect(function(pdfData) {
+              const data = JSON.parse(pdfData);
+              if (window.ReactApp && window.ReactApp.onPdfDataChanged) {
+                window.ReactApp.onPdfDataChanged(data);
+              }
+            });
+          }
+          
+          if (bridge.themeChanged) {
+            bridge.themeChanged.connect(function(theme) {
+              document.documentElement.setAttribute('data-theme', theme);
+              if (window.ReactApp && window.ReactApp.onThemeChanged) {
+                window.ReactApp.onThemeChanged(theme);
+              }
+            });
+          }
+          
+          if (bridge.settingsChanged) {
+            bridge.settingsChanged.connect(function(settings) {
+              const data = JSON.parse(settings);
+              if (window.ReactApp && window.ReactApp.onSettingsChanged) {
+                window.ReactApp.onSettingsChanged(data);
+              }
+            });
+          }
+        });
+      } else {
+        // Standalone web ortamı için mock bridge
+        console.log('Running in standalone web mode');
+        setTimeout(() => {
+          window.pypdfTools.onBridgeReady({
+            onToolAction: (data) => {
+              console.log('Mock tool action:', data);
+              return '{"success": true, "result": "Mock execution"}';
+            },
+            onPageChange: (data) => console.log('Mock page change:', data),
+            onAnnotationAdd: (data) => console.log('Mock annotation add:', data)
+          });
+        }, 100);
+      }
+    </script>
+  </body>
+</html>
