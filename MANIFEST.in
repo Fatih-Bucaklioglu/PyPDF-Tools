@@ -1,0 +1,96 @@
+# MANIFEST.in - PyPDF-Tools Package Manifest
+# Bu dosya Python paketine dahil edilecek ek dosyaları belirtir
+
+# Dokümantasyon dosyaları
+include README.md
+include LICENSE
+include CHANGELOG.md
+include CONTRIBUTING.md
+include CODE_OF_CONDUCT.md
+
+# Yapılandırma dosyaları
+include pyproject.toml
+include setup.py
+include requirements.txt
+graft requirements/
+
+# React build dosyaları (en önemli!)
+recursive-include src/pypdf_tools/web/build *
+include src/pypdf_tools/web/build/index.html
+recursive-include src/pypdf_tools/web/build/static *
+
+# Resource dosyaları
+recursive-include src/pypdf_tools/resources *
+recursive-include src/pypdf_tools/assets *
+include src/pypdf_tools/assets/icons/*.png
+include src/pypdf_tools/assets/icons/*.svg
+include src/pypdf_tools/assets/themes/*.css
+
+# Template ve config dosyaları
+include src/pypdf_tools/templates/*.html
+include src/pypdf_tools/config/*.json
+include src/pypdf_tools/config/*.toml
+
+# Test fixtures
+recursive-include tests/fixtures *
+include tests/fixtures/*.pdf
+include tests/fixtures/*.json
+
+# Dokümantasyon
+recursive-include docs *
+include docs/*.md
+include docs/*.rst
+recursive-include docs/images *
+recursive-include docs/_build/html *
+
+# Development dosyaları (dahil etme)
+include .pre-commit-config.yaml
+include .gitignore
+include .github/workflows/*.yml
+include .github/ISSUE_TEMPLATE/*.md
+include .github/PULL_REQUEST_TEMPLATE.md
+
+# Exclude development files
+exclude .DS_Store
+exclude .env*
+exclude *.log
+recursive-exclude * __pycache__
+recursive-exclude * *.py[co]
+recursive-exclude * *.so
+recursive-exclude * *.pyd
+
+# Node.js development dosyaları exclude et
+exclude web/node_modules
+recursive-exclude web/node_modules *
+exclude web/.npm
+exclude web/npm-debug.log*
+exclude web/yarn-error.log
+
+# IDE dosyaları exclude et
+exclude .vscode/settings.json
+exclude .idea/
+recursive-exclude .idea *
+exclude *.swp
+exclude *.swo
+exclude *~
+
+# Build artifacts exclude et
+exclude build/
+recursive-exclude build *
+exclude dist/
+recursive-exclude dist *
+exclude *.egg-info/
+recursive-exclude *.egg-info *
+
+# Cache dosyaları exclude et
+recursive-exclude * .pytest_cache
+recursive-exclude * .mypy_cache
+recursive-exclude * .coverage
+exclude htmlcov/
+recursive-exclude htmlcov *
+
+# Geçici dosyalar exclude et
+exclude temp/
+exclude tmp/
+recursive-exclude * *.tmp
+recursive-exclude * *.temp
