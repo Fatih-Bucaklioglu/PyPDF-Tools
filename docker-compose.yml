@@ -1,0 +1,152 @@
+version: '3.8'
+
+services:
+  pypdf-tools:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: final
+    container_name: pypdf-tools-app
+    
+    # X11 forwarding for GUI (Linux)
+    environment:
+      - DISPLAY=${DISPLAY:-:0}
+      - QT_X11_NO_MITSHM=1
+      - QT_QPA_PLATFORM=xcb
+      - XAUTHORITY=/tmp/.docker.xauth
+    
+    volumes:
+      # X11 socket for GUI
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - /tmp/.docker.xauth:/tmp/.docker.xauth:rw
+      
+      # Data persistence
+      - pypdf_data:/app/data
+      - pypdf_config:/app/config
+      
+      # PDF files directory (bind mount)
+      - ${PWD}/pdf_files:/app/pdf_files:ro
+      
+    networks:
+      - pypdf-network
+    
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.0'
+        reservations:
+          memory: 512M
+          cpus: '0.5'
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "python", "-c", "import pypdf_tools; print('OK')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    
+    # Restart policy
+    restart: unless-stopped
+    
+    # Command override for development
+    command: python -m pypdf_tools.main --no-splash
+  
+  # Development service with hot reload
+  pypdf-tools-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+      target: development
+    container_name: pypdf-tools-dev
+    
+    environment:
+      - DISPLAY=${DISPLAY:-:0}
+      - PYPDF_DEBUG=1
+      - FLASK_ENV=development
+    
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - /tmp/.docker.xauth:/tmp/.docker.xauth:rw
+      - .:/app:rw  # Source code bind mount
+      - pypdf_dev_data:/app/data
+    
+    networks:
+      - pypdf-network
+    
+    # Development ports
+    ports:
+      - "5000:5000"  # Development server
+      - "8080:8080"  # React dev server proxy
+    
+    command: python -m pypdf_tools.main --debug
+
+  # React development server (ayrı container)
+  react-dev:
+    build:
+      context: ./web
+      dockerfile: Dockerfile.dev
+    container_name: pypdf-react-dev
+    
+    volumes:
+      - ./web:/app:rw
+      - /app/node_modules  # Anonymous volume for node_modules
+    
+    ports:
+      - "3000:3000"  # React dev server
+    
+    networks:
+      - pypdf-network
+    
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+      - FAST_REFRESH=true
+    
+    command: npm start
+    profiles: ["dev"]  # Only start with --profile dev
+
+  # Test runner service
+  test-runner:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: python-base
+    container_name: pypdf-test-runner
+    
+    volumes:
+      - .:/app:ro
+      - test_results:/app/test-results
+    
+    environment:
+      - QT_QPA_PLATFORM=offscreen
+      - PYPDF_TEST_MODE=1
+    
+    networks:
+      - pypdf-network
+    
+    command: pytest tests/ --cov=src/pypdf_tools --cov-report=html:/app/test-results/coverage
+    profiles: ["test"]
+
+networks:
+  pypdf-network:
+    driver: bridge
+    name: pypdf-tools-network
+
+volumes:
+  pypdf_data:
+    name: pypdf-tools-data
+    driver: local
+  
+  pypdf_config:
+    name: pypdf-tools-config
+    driver: local
+  
+  pypdf_dev_data:
+    name: pypdf-tools-dev-data
+    driver: local
+  
+  test_results:
+    name: pypdf-tools-test-results
+    driver: local
