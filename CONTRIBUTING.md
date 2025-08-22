@@ -1,565 +1,490 @@
-# Katkıda Bulunma Rehberi 🤝
+# Katkı Sağlama Rehberi
 
-PyPDF-Tools projesine katkıda bulunmak istediğiniz için teşekkür ederiz! Bu rehber size nasıl katkıda bulunabileceğinizi gösterecektir.
+PyPDF-Tools projesine katkıda bulunduğunuz için teşekkür ederiz! Bu rehber, projeye nasıl katkı sağlayabileceğiniz konusunda size yol gösterecektir.
 
-## 📋 İçindekiler
+## İçindekiler
 
-- [Başlamadan Önce](#başlamadan-önce)
-- [Geliştirme Ortamı Kurulumu](#geliştirme-ortamı-kurulumu)
+- [Davranış Kuralları](#davranış-kuralları)
 - [Katkı Türleri](#katkı-türleri)
+- [Geliştirme Ortamı Kurulumu](#geliştirme-ortamı-kurulumu)
 - [Pull Request Süreci](#pull-request-süreci)
-- [Kod Standartları](#kod-standartları)
+- [Kodlama Standartları](#kodlama-standartları)
 - [Test Yazma](#test-yazma)
 - [Dokümantasyon](#dokümantasyon)
-- [Issue Bildirme](#issue-bildirme)
-- [İletişim](#iletişim)
+- [Issue Raporlama](#issue-raporlama)
 
-## 🚀 Başlamadan Önce
+## Davranış Kuralları
 
-### Davranış Kuralları
-Bu projeye katılım gösteren herkes [Davranış Kuralları](CODE_OF_CONDUCT.md) belgesine uymayı kabul etmiş sayılır.
+Bu proje [Contributor Covenant](CODE_OF_CONDUCT.md) davranış kurallarını benimser. Katkıda bulunarak bu kuralları takip etmeyi kabul edersiniz.
 
-### Katkı Felsefesi
-- **Kullanıcı Odaklı**: Her özellik kullanıcı deneyimini iyileştirmeli
-- **Performans**: Hız ve bellek kullanımı her zaman önceliktir
-- **Cross-Platform**: Tüm platformlarda çalışmalı
-- **Güvenlik**: Kullanıcı verileri güvende olmalı
-- **Açık Kaynak**: Şeffaf ve topluluk odaklı geliştirme
+## Katkı Türleri
 
-## 💻 Geliştirme Ortamı Kurulumu
+### 🐛 Bug Raporları
+- Beklenmeyen davranışları rapor edin
+- Hata mesajlarını ve log'ları paylaşın
+- Tekrarlanabilir adımlar sağlayın
 
-### Ön Gereksinimler
-```bash
-# Python 3.8+ gerekli (3.11+ önerili)
-python --version
-
-# Git kurulu olmalı
-git --version
-
-# Platform-specific dependencies
-# Ubuntu/Debian:
-sudo apt install python3-dev python3-venv build-essential
-
-# macOS:
-brew install python@3.11
-
-# Windows:
-# Python.org'dan Python 3.11+ indirin
-```
-
-### Repository'yi Fork ve Clone Etme
-```bash
-# 1. GitHub'da repository'yi fork edin
-# 2. Fork'unuzu clone edin
-git clone https://github.com/KULLANICI_ADINIZ/PyPDF-Tools.git
-cd PyPDF-Tools
-
-# 3. Upstream remote ekleyin
-git remote add upstream https://github.com/Fatih-Bucaklioglu/PyPDF-Tools.git
-
-# 4. Upstream ile senkronize olun
-git fetch upstream
-git checkout main
-git merge upstream/main
-```
-
-### Geliştirme Ortamını Kurma
-```bash
-# Sanal ortam oluşturun
-python -m venv venv
-
-# Aktivasyon
-# Linux/macOS:
-source venv/bin/activate
-# Windows:
-venv\Scripts\activate
-
-# Dependencies kurulumu
-pip install --upgrade pip
-pip install -e ".[dev]"
-
-# Pre-commit hooks kurulumu
-pre-commit install
-```
-
-### IDE Konfigürasyonu
-
-#### Visual Studio Code
-```json
-// .vscode/settings.json
-{
-    "python.defaultInterpreterPath": "./venv/bin/python",
-    "python.linting.enabled": true,
-    "python.linting.pylintEnabled": true,
-    "python.linting.flake8Enabled": true,
-    "python.formatting.provider": "black",
-    "python.sortImports.args": ["--profile", "black"],
-    "editor.formatOnSave": true,
-    "editor.codeActionsOnSave": {
-        "source.organizeImports": true
-    }
-}
-```
-
-#### PyCharm
-- File → Settings → Project → Python Interpreter → venv/bin/python
-- Enable "Format code on save"
-- Code Style → Python → Import Black settings
-
-## 🎯 Katkı Türleri
-
-### 🐛 Bug Fix
-- Mevcut hataları düzeltin
-- Test ekleyin
-- Regresyon kontrolü yapın
-
-### ✨ Yeni Özellik
-- GitHub Issues'da tartışın
-- Design document oluşturun
-- Performans etkisini değerlendirin
+### 🚀 Özellik Önerileri
+- Yeni özellik fikirlerinizi paylaşın
+- Kullanım senaryolarını açıklayın
+- Mockup veya örnek görseller ekleyin
 
 ### 📝 Dokümantasyon
-- README güncellemeleri
-- Kod yorumları
-- API dokümantasyonu
-- Kullanıcı kılavuzu
+- README dosyasını geliştirin
+- API dokümantasyonu ekleyin
+- Tutorial ve rehberler yazın
 
-### 🎨 UI/UX İyileştirmeleri
-- Tasarım tutarlılığı
-- Accessibility
-- Responsive design
-- Tema geliştirmeleri
+### 💻 Kod Katkıları
+- Bug düzeltmeleri
+- Yeni özellik implementasyonları
+- Performans iyileştirmeleri
+- Test coverage artırımı
 
-### ⚡ Performans
-- Bellek optimizasyonu
-- Hız iyileştirmeleri
-- Algoritma optimizasyonu
+### 🌍 Çeviri
+- Arayüz metinlerini çevirin
+- Dokümantasyonu farklı dillere çevirin
 
-### 🧪 Test Coverage
-- Unit testler
-- Integration testler
-- End-to-end testler
+## Geliştirme Ortamı Kurulumu
 
-## 🔄 Pull Request Süreci
+### Gereksinimler
 
-### 1. Branch Oluşturma
+**Python Tarafı:**
+- Python 3.8 veya üzeri
+- pip veya poetry
+- PyQt6 ve bağımlılıkları
+
+**React Tarafı:**
+- Node.js 16 veya üzeri
+- npm veya yarn
+
+### Kurulum Adımları
+
+1. **Repository'yi fork edin ve clone edin:**
 ```bash
-# Main'den yeni branch oluşturun
-git checkout main
-git pull upstream main
-git checkout -b feature/amazing-feature
-
-# Alternatif isimlendirmeler:
-# feature/pdf-merge-improvement
-# bugfix/memory-leak-fix
-# docs/api-documentation
-# refactor/code-cleanup
+git clone https://github.com/YOUR_USERNAME/PyPDF-Tools.git
+cd PyPDF-Tools
 ```
 
-### 2. Değişiklik Yapma
+2. **Python virtual environment oluşturun:**
 ```bash
-# Kod değişikliklerini yapın
-# Testleri çalıştırın
-python -m pytest tests/ -v
+python -m venv venv
+source venv/bin/activate  # Linux/Mac
+# veya
+venv\Scripts\activate     # Windows
+```
 
-# Linting kontrolü
+3. **Python bağımlılıklarını yükleyin:**
+```bash
+pip install -e ".[dev]"
+```
+
+4. **React bağımlılıklarını yükleyin:**
+```bash
+cd web
+npm install
+```
+
+5. **React uygulamasını build edin:**
+```bash
+npm run build
+cd ..
+```
+
+6. **Testleri çalıştırın:**
+```bash
+pytest
+```
+
+### Geliştirme Modu
+
+**Python kısmı için:**
+```bash
+python -m pypdf_tools.main
+```
+
+**React kısmı için (development server):**
+```bash
+cd web
+npm start
+```
+
+## Pull Request Süreci
+
+### 1. Branch Oluşturma
+
+```bash
+git checkout -b feature/your-feature-name
+# veya
+git checkout -b fix/bug-description
+```
+
+**Branch adlandırma kuralları:**
+- `feature/` - Yeni özellikler için
+- `fix/` - Bug düzeltmeleri için
+- `docs/` - Dokümantasyon için
+- `refactor/` - Kod refaktörü için
+- `test/` - Test ekleme/düzeltme için
+
+### 2. Değişiklikleri Yapma
+
+- Küçük, odaklanmış commit'ler yapın
+- Açıklayıcı commit mesajları yazın
+- [Conventional Commits](https://www.conventionalcommits.org/) formatını kullanın
+
+**Commit mesaj örnekleri:**
+```
+feat: PDF birleştirme özelliği eklendi
+fix: zoom fonksiyonundaki hata düzeltildi
+docs: kurulum rehberi güncellendi
+test: PDF viewer için unit testler eklendi
+```
+
+### 3. Test Etme
+
+```bash
+# Python testlerini çalıştır
+pytest
+
+# React testlerini çalıştır
+cd web && npm test
+
+# Code quality kontrolü
+flake8 src/
+black src/ --check
+mypy src/
+```
+
+### 4. Pull Request Oluşturma
+
+**PR şablonu:**
+```markdown
+## Açıklama
+Bu PR'da yapılan değişikliklerin kısa açıklaması.
+
+## Değişiklik Türü
+- [ ] Bug fix
+- [ ] Yeni özellik
+- [ ] Breaking change
+- [ ] Dokümantasyon
+
+## Nasıl Test Edilir
+1. Adım bir
+2. Adım iki
+3. Beklenen sonuç
+
+## Ekran Görüntüleri
+Varsa ekran görüntülerini ekleyin.
+
+## Checklist
+- [ ] Kod self-review yapıldı
+- [ ] Testler eklendi/güncellendi
+- [ ] Dokümantasyon güncellendi
+- [ ] CHANGELOG.md güncellendi
+```
+
+## Kodlama Standartları
+
+### Python
+
+**Style Guide:**
+- [PEP 8](https://peps.python.org/pep-0008/) kurallarını takip edin
+- [Black](https://black.readthedocs.io/) formatter kullanın
+- Maximum line length: 88 karakter
+
+**Linting:**
+```bash
 flake8 src/
 black src/
 isort src/
-
-# Pre-commit kontrolleri
-pre-commit run --all-files
+mypy src/
 ```
 
-### 3. Commit Yapma
-```bash
-# Conventional Commits formatını kullanın
-git add .
-git commit -m "feat: add advanced PDF merge with bookmarks"
-
-# Commit mesaj örnekleri:
-# feat: add OCR language auto-detection
-# fix: resolve memory leak in PDF processing
-# docs: update installation guide for macOS
-# style: apply black formatting to main.py
-# refactor: optimize PDF compression algorithm
-# test: add unit tests for merge functionality
-# chore: update dependencies
-```
-
-### 4. Push ve PR
-```bash
-# Branch'i push edin
-git push origin feature/amazing-feature
-
-# GitHub'da Pull Request oluşturun
-# PR template'i doldurun
-# Reviewers atayın
-```
-
-### PR Template Kontrol Listesi
-- [ ] **Açıklama**: Neyi değiştirdiğinizi ve neden açıklayın
-- [ ] **Breaking Changes**: Varsa belirtin
-- [ ] **Screenshots**: UI değişiklikleri için
-- [ ] **Tests**: Yeni testler eklendi/güncellendi
-- [ ] **Docs**: Dokümantasyon güncellendi
-- [ ] **Performance**: Performans etki değerlendirmesi
-
-## 📏 Kod Standartları
-
-### Python Style Guide
+**Dokümantasyon:**
 ```python
-# PEP 8 + Black formatter kullanıyoruz
-
-# ✅ İyi örnek
-def process_pdf_file(
-    input_path: str,
-    output_path: str,
-    compression_level: int = 6
-) -> bool:
+def merge_pdfs(input_files: List[str], output: str) -> Dict[str, Any]:
     """
-    PDF dosyasını işler ve sıkıştırır.
+    Birden fazla PDF dosyasını birleştir.
     
     Args:
-        input_path: Giriş PDF dosyası yolu
-        output_path: Çıkış PDF dosyası yolu  
-        compression_level: Sıkıştırma seviyesi (1-9)
+        input_files: Birleştirilecek PDF dosyalarının yolları
+        output: Çıktı dosyasının yolu
         
     Returns:
-        İşlem başarı durumu
+        İşlem sonucu ve meta bilgileri içeren dictionary
         
     Raises:
-        FileNotFoundError: Giriş dosyası bulunamadı
-        ValueError: Geçersiz sıkıştırma seviyesi
+        FileNotFoundError: Input dosyalarından biri bulunamazsa
+        PDFMergeError: Birleştirme işleminde hata oluşursa
     """
-    if not os.path.exists(input_path):
-        raise FileNotFoundError(f"Input file not found: {input_path}")
-        
-    if not 1 <= compression_level <= 9:
-        raise ValueError("Compression level must be between 1-9")
-        
-    # İşleme kodu...
-    return True
-
-# ❌ Kötü örnek
-def processPdf(inp,out,comp=6):
-    # Dosya işleme
-    pass
 ```
 
-### Type Hints
-```python
-from typing import List, Optional, Dict, Any, Union
-from pathlib import Path
+### JavaScript/React
 
-# Her fonksiyon type hint'e sahip olmalı
-def merge_pdfs(
-    input_files: List[Union[str, Path]],
-    output_file: Union[str, Path],
-    bookmarks: Optional[Dict[str, Any]] = None
-) -> bool:
-    pass
+**Style Guide:**
+- [Airbnb JavaScript Style Guide](https://airbnb.io/javascript/)
+- [React Hook'ları](https://reactjs.org/docs/hooks-intro.html) tercih edin
+- Functional component'lar kullanın
+
+**Naming Conventions:**
+```javascript
+// Bileşenler PascalCase
+const PDFViewer = () => {}
+
+// Hook'lar "use" prefix ile camelCase
+const useZoomControl = () => {}
+
+// Fonksiyonlar camelCase
+const handleToolAction = () => {}
+
+// Sabitler UPPER_SNAKE_CASE
+const MAX_ZOOM_LEVEL = 500
 ```
 
-### Error Handling
-```python
-import logging
-from contextlib import contextmanager
+**PropTypes/TypeScript:**
+```javascript
+const PDFViewer = ({ 
+  pdfData, 
+  onToolAction, 
+  theme = 'light',
+  ...props 
+}) => {
+  // Component implementation
+}
 
-logger = logging.getLogger(__name__)
-
-# Custom exception'lar kullanın
-class PDFProcessingError(Exception):
-    """PDF işleme hatalarını temsil eder."""
-    pass
-
-# Context manager kullanın
-@contextmanager
-def pdf_processor(file_path: str):
-    processor = None
-    try:
-        processor = PDFProcessor(file_path)
-        yield processor
-    except Exception as e:
-        logger.error(f"PDF processing failed: {e}")
-        raise PDFProcessingError(f"Failed to process {file_path}") from e
-    finally:
-        if processor:
-            processor.cleanup()
+// PropTypes tanımlaması
+PDFViewer.propTypes = {
+  pdfData: PropTypes.object,
+  onToolAction: PropTypes.func.isRequired,
+  theme: PropTypes.oneOf(['light', 'dark', 'neon', 'midnight']),
+}
 ```
 
-### Logging
-```python
-import logging
+## Test Yazma
 
-# Logger kullanımı
-logger = logging.getLogger(__name__)
+### Python Testleri
 
-def process_file(file_path: str) -> None:
-    logger.info(f"Processing file: {file_path}")
-    
-    try:
-        # İşleme kodu
-        logger.debug("PDF processing completed successfully")
-    except Exception as e:
-        logger.error(f"Processing failed: {e}", exc_info=True)
-        raise
-```
+**pytest** kullanıyoruz. Test dosyaları `tests/` dizininde.
 
-## 🧪 Test Yazma
-
-### Test Yapısı
-```
-tests/
-├── __init__.py
-├── conftest.py              # Pytest fixtures
-├── test_pdf_utils.py        # PDF utility testleri  
-├── test_ocr_module.py       # OCR modül testleri
-├── test_ui_components.py    # UI component testleri
-├── fixtures/                # Test dosyaları
-│   ├── sample.pdf
-│   ├── encrypted.pdf
-│   └── scanned.pdf
-└── integration/             # Entegrasyon testleri
-    └── test_full_workflow.py
-```
-
-### Unit Test Örneği
 ```python
 import pytest
-from unittest.mock import Mock, patch
-from pathlib import Path
+from pypdf_tools.features.pdf_viewer import PDFViewerWidget
 
-from pypdf_tools.core.pdf_processor import PDFProcessor
-from pypdf_tools.exceptions import PDFProcessingError
-
-
-class TestPDFProcessor:
-    """PDFProcessor class testleri."""
-    
+class TestPDFViewer:
     @pytest.fixture
-    def sample_pdf_path(self, tmp_path):
-        """Test için geçici PDF dosyası oluşturur."""
-        pdf_file = tmp_path / "sample.pdf"
-        # PDF dosyası oluştur
-        return str(pdf_file)
+    def pdf_viewer(self):
+        return PDFViewerWidget()
     
-    @pytest.fixture
-    def processor(self):
-        """PDFProcessor instance'ı oluşturur."""
-        return PDFProcessor()
+    def test_initialization(self, pdf_viewer):
+        assert pdf_viewer is not None
     
-    def test_merge_pdfs_success(self, processor, sample_pdf_path, tmp_path):
-        """PDF birleştirme başarı senaryosu."""
-        output_path = tmp_path / "merged.pdf"
-        
-        result = processor.merge_pdfs(
-            [sample_pdf_path, sample_pdf_path],
-            str(output_path)
-        )
-        
+    def test_load_pdf_success(self, pdf_viewer):
+        result = pdf_viewer.load_pdf("test_files/sample.pdf")
         assert result is True
-        assert output_path.exists()
-        
-    def test_merge_pdfs_file_not_found(self, processor):
-        """Dosya bulunamama hatası testi."""
-        with pytest.raises(FileNotFoundError):
-            processor.merge_pdfs(
-                ["nonexistent.pdf"],
-                "output.pdf"
-            )
-            
-    @patch('pypdf_tools.core.pdf_processor.PyPDF2.PdfReader')
-    def test_merge_pdfs_processing_error(self, mock_reader, processor):
-        """PDF işleme hatası testi."""
-        mock_reader.side_effect = Exception("PDF corrupted")
-        
-        with pytest.raises(PDFProcessingError):
-            processor.merge_pdfs(["sample.pdf"], "output.pdf")
 ```
 
-### Integration Test Örneği
-```python
-def test_full_pdf_workflow(tmp_path):
-    """Tam PDF işleme workflow'u testi."""
-    # Setup
-    input_files = create_test_pdfs(tmp_path, count=3)
-    output_file = tmp_path / "result.pdf"
-    
-    # Test workflow
-    processor = PDFProcessor()
-    
-    # 1. Merge
-    merged_file = tmp_path / "merged.pdf"
-    processor.merge_pdfs(input_files, str(merged_file))
-    
-    # 2. Compress
-    processor.compress_pdf(str(merged_file), str(output_file))
-    
-    # 3. Verify
-    assert output_file.exists()
-    assert output_file.stat().st_size > 0
-    assert output_file.stat().st_size < merged_file.stat().st_size
+**Test kategorileri:**
+- Unit testler: `test_*.py`
+- Integration testler: `test_*_integration.py` 
+- E2E testler: `test_e2e_*.py`
+
+### React Testleri
+
+**Jest** ve **React Testing Library** kullanıyoruz.
+
+```javascript
+import { render, screen, fireEvent } from '@testing-library/react'
+import PDFViewer from '../PDFViewer'
+
+test('renders PDF viewer component', () => {
+  render(<PDFViewer pdfData={mockPdfData} />)
+  expect(screen.getByText('PDF Viewer')).toBeInTheDocument()
+})
+
+test('handles tool actions', () => {
+  const mockToolAction = jest.fn()
+  render(
+    <PDFViewer 
+      pdfData={mockPdfData} 
+      onToolAction={mockToolAction} 
+    />
+  )
+  
+  fireEvent.click(screen.getByRole('button', { name: 'Zoom In' }))
+  expect(mockToolAction).toHaveBeenCalledWith('zoom-in', expect.any(Object))
+})
 ```
 
-### Test Çalıştırma
+### Test Coverage
+
+Minimum %80 test coverage hedefliyoruz:
+
 ```bash
-# Tüm testler
-python -m pytest tests/ -v
+# Python coverage
+pytest --cov=src/pypdf_tools --cov-report=html
 
-# Belirli test dosyası
-python -m pytest tests/test_pdf_utils.py -v
-
-# Coverage raporu
-python -m pytest tests/ --cov=src/ --cov-report=html
-
-# Paralel testler (daha hızlı)
-python -m pytest tests/ -n auto
+# JavaScript coverage  
+cd web && npm test -- --coverage
 ```
 
-## 📚 Dokümantasyon
+## Dokümantasyon
 
-### Code Documentation
+### README Güncellemeleri
+
+- Kurulum talimatları
+- Kullanım örnekleri
+- Screenshot'lar
+- API referansı
+
+### Code Dokümantasyonu
+
+**Python:**
 ```python
-def compress_pdf(
-    self,
-    input_path: str,
-    output_path: str,
-    quality: str = "medium"
-) -> bool:
-    """
-    PDF dosyasını sıkıştırır.
+class PDFProcessor:
+    """PDF işleme operasyonları için ana sınıf.
     
-    Bu method çeşitli sıkıştırma algoritmaları kullanarak PDF dosyasının
-    boyutunu azaltır. Görsel kalitesini koruyarak maksimum sıkıştırma sağlar.
+    Bu sınıf PDF dosyalarını yükleme, işleme ve kaydetme
+    operasyonlarını yönetir.
     
-    Args:
-        input_path: Sıkıştırılacak PDF dosyasının tam yolu
-        output_path: Sıkıştırılmış dosyanın kaydedileceği yol
-        quality: Sıkıştırma kalitesi ('low', 'medium', 'high')
-        
-    Returns:
-        bool: İşlem başarılı ise True, aksi halde False
-        
-    Raises:
-        FileNotFoundError: Giriş dosyası bulunamadığında
-        ValueError: Geçersiz kalite parametresi verildiğinde
-        PDFProcessingError: PDF işleme sırasında hata oluştuğunda
+    Attributes:
+        current_pdf: Şu anda açık olan PDF dosyası
+        settings: Kullanıcı ayarları
         
     Example:
         >>> processor = PDFProcessor()
-        >>> success = processor.compress_pdf(
-        ...     "input.pdf",
-        ...     "compressed.pdf", 
-        ...     quality="high"
-        ... )
-        >>> print(f"Compression successful: {success}")
-        Compression successful: True
-        
-    Note:
-        - 'low' kalite: Maksimum sıkıştırma, düşük görsel kalite
-        - 'medium' kalite: Dengeli sıkıştırma ve kalite (varsayılan)  
-        - 'high' kalite: Minimal sıkıştırma, yüksek görsel kalite
-        
-    Version:
-        Added in v2.0.0
+        >>> processor.load_pdf('document.pdf')
+        >>> processor.merge_with('other.pdf')
     """
 ```
 
-### API Documentation
-API dokümantasyonu için Sphinx kullanıyoruz:
-
-```bash
-# Dokümantasyon oluştur
-cd docs/
-make html
-
-# Canlı preview
-sphinx-autobuild source build/html
+**JavaScript:**
+```javascript
+/**
+ * PDF görüntüleme ve manipülasyon bileşeni
+ * 
+ * @param {Object} props - Bileşen props'ları
+ * @param {Object} props.pdfData - PDF verisi
+ * @param {Function} props.onToolAction - Tool action handler
+ * @param {string} props.theme - UI teması
+ * @returns {JSX.Element} PDF viewer bileşeni
+ */
+const PDFViewer = ({ pdfData, onToolAction, theme }) => {
+  // Bileşen implementasyonu
+}
 ```
 
-## 🐛 Issue Bildirme
+## Issue Raporlama
 
-### Bug Report Template
-Issues açarken şu bilgileri ekleyin:
+### Bug Raporu Şablonu
 
 ```markdown
-## Bug Tanımı
-Hatanın kısa ve net tanımı
+**Bug Açıklaması**
+Kısa ve net bug açıklaması.
 
-## Yeniden Üretme Adımları
-1. '...' adımını yapın
-2. '...' seçeneğine tıklayın  
-3. '...' sonucunu görün
+**Tekrarlama Adımları**
+1. Şunu yap
+2. Şunu tıkla  
+3. Şunu gör
+4. Hatayı gör
 
-## Beklenen Davranış
+**Beklenen Davranış**
 Ne olmasını bekliyordunuz?
 
-## Gerçek Davranış  
-Aslında ne oldu?
+**Gerçek Davranış**  
+Ne oldu?
 
-## Sistem Bilgileri
-- İşletim Sistemi: [e.g. Windows 11, Ubuntu 22.04, macOS 13]
-- Python Sürümü: [e.g. 3.11.2]
-- PyPDF-Tools Sürümü: [e.g. 2.0.0]
-- Kurulum Yöntemi: [AppImage, .deb, .exe, source]
+**Ekran Görüntüleri**
+Varsa ekran görüntüleri ekleyin.
 
-## Error Logs
+**Ortam Bilgileri**
+- İşletim Sistemi: [Windows 11, macOS 13, Ubuntu 22.04]
+- Python Sürümü: [3.9.0]
+- PyQt6 Sürümü: [6.4.0]
+- Node.js Sürümü: [18.0.0]
+- Tarayıcı: [Chrome 108, Firefox 107, Safari 16]
+
+**Ek Bilgi**
+İlave context, log dosyaları, vb.
 ```
-Hata mesajlarını buraya yapıştırın
-```
 
-## Ekran Görüntüleri
-Varsa hata ekran görüntülerini ekleyin
-```
+### Özellik Önerisi Şablonu
 
-### Feature Request Template
 ```markdown
-## Özellik Önerisi
-Önerilen özelliğin kısa tanımı
+**Özellik Özeti**
+Önerilen özelliğin kısa açıklaması.
 
-## Motivasyon / Use Case
-Bu özellik neden gerekli? Hangi problemi çözecek?
+**Problem/İhtiyaç**
+Hangi problemi çözüyor? Neden gerekli?
 
-## Detaylı Açıklama
+**Çözüm Önerisi**
 Özelliğin nasıl çalışmasını istiyorsunuz?
 
-## Alternatifler
-Başka çözümler düşündünüz mü?
+**Alternatifler**
+Düşündüğünüz başka çözümler var mı?
 
-## Implementasyon Önerileri
-Teknik implementasyon hakkında fikirleriniz
+**Ek Bilgi**
+Mockup'lar, benzer örnekler, referanslar.
 ```
 
-## 📞 İletişim
+## Code Review Süreci
 
-### Online Topluluk
-- **Discord**: [PyPDF Tools Community](https://discord.gg/pypdf-tools)
-- **Telegram**: [@pypdf_tools](https://t.me/pypdf_tools)  
-- **Reddit**: [r/PyPDFTools](https://reddit.com/r/PyPDFTools)
+### Reviewer İçin Checklist
 
-### Proje Maintainers
-- **Fatih Bucaklıoğlu** (@Fatih-Bucaklioglu) - Lead Developer
-- **Contributors**: Katkıda bulunanlar listesi için [Contributors](https://github.com/Fatih-Bucaklioglu/PyPDF-Tools/graphs/contributors) sayfasına bakın
+- [ ] Kod style guide'a uygun mu?
+- [ ] Testler eklenmiş/güncellenmiş mi?
+- [ ] Dokümantasyon güncellenmiş mi?
+- [ ] Performans etkisi düşünülmüş mü?
+- [ ] Security açısından güvenli mi?
+- [ ] Breaking change var mı?
 
-### E-posta İletişim
-- **Genel**: fatih@pypdf-tools.com
-- **Güvenlik**: security@pypdf-tools.com
-- **Kurumsal**: enterprise@pypdf-tools.com
+### PR Author İçin Checklist
 
-## 🙏 Teşekkürler
+- [ ] Self-review yapıldı
+- [ ] Tüm testler geçiyor
+- [ ] Dokümantasyon güncellendi
+- [ ] CHANGELOG.md'ye eklendi
+- [ ] Commit mesajları anlaşılır
+- [ ] PR açıklaması yeterli detayda
 
-Bu projeye katkıda bulunduğunuz için teşekkür ederiz! Her türlü katkı (kod, dokümantasyon, test, bug report, feature request) değerlidir.
+## Release Süreci
 
-### Katkıda Bulunanlar
-Projeye katkıda bulunan herkesi [Contributors](https://github.com/Fatih-Bucaklioglu/PyPDF-Tools/graphs/contributors) sayfasında görebilirsiniz.
+1. **Version Bump**: Semantic versioning kurallarına göre
+2. **CHANGELOG Update**: Yeni sürüm için changelog güncelleme  
+3. **Testing**: Comprehensive test suite çalıştırma
+4. **Documentation**: Release notes ve dokümantasyon
+5. **Tagging**: Git tag oluşturma
+6. **PyPI Release**: Package yayınlama
+7. **GitHub Release**: GitHub release sayfası
+
+## Yardım Alma
+
+### İletişim Kanalları
+
+- **GitHub Issues**: Teknik sorular ve bug raporları
+- **GitHub Discussions**: Genel tartışmalar ve sorular  
+- **Email**: fatih.bucaklioglu@example.com (maintainer)
+
+### Faydalı Kaynaklar
+
+**Python/PyQt:**
+- [PyQt6 Documentation](https://doc.qt.io/qtforpython/)
+- [Python Type Hints](https://docs.python.org/3/library/typing.html)
+- [pytest Documentation](https://docs.pytest.org/)
+
+**React/JavaScript:**
+- [React Documentation](https://reactjs.org/docs/)
+- [Tailwind CSS](https://tailwindcss.com/docs)
+- [Jest Testing](https://jestjs.io/docs/getting-started)
+
+**PDF Processing:**
+- [pypdf Documentation](https://pypdf.readthedocs.io/)
+- [ReportLab Guide](https://www.reportlab.com/docs/reportlab-userguide.pdf)
+
+## Teşekkürler
+
+PyPDF-Tools'a katkıda bulunan herkese teşekkür ederiz! 
+
+Sizin katkılarınız bu projeyi daha iyi hale getiriyor. 🚀
 
 ---
 
-## 📄 Lisans
-
-Bu proje MIT Lisansı altında lisanslanmıştır. Detaylar için [LICENSE](LICENSE) dosyasına bakabilirsiniz.
-
----
-
-**Sorularınız mı var?** [GitHub Discussions](https://github.com/Fatih-Bucaklioglu/PyPDF-Tools/discussions) kısmında soru sorabilirsiniz!
+> **Not**: Bu rehber sürekli güncellenir. Sorularınız veya önerileriniz için issue açmaktan çekinmeyin!
