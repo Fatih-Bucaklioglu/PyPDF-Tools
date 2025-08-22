@@ -1,128 +1,179 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import path from 'path'
+import { resolve } from 'path'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+  ],
   
-  // Build configuration
+  // Build configuration for PyQt6 WebEngine integration
   build: {
+    // Output directory - will be copied to src/pypdf_tools/web/build/
     outDir: 'build',
+    
+    // Generate relative paths for PyQt6 WebEngine
+    base: './',
+    
+    // Assets directory
     assetsDir: 'static',
-    sourcemap: process.env.NODE_ENV === 'development',
-    minify: process.env.NODE_ENV === 'production' ? 'terser' : false,
+    
+    // Generate manifest for asset management
+    manifest: true,
     
     // Rollup options
     rollupOptions: {
+      input: {
+        main: resolve(__dirname, 'index.html')
+      },
       output: {
-        manualChunks: {
-          // Vendor chunk
-          vendor: ['react', 'react-dom'],
-          // Lucide icons chunk  
-          icons: ['lucide-react']
-        },
-        // Asset naming
+        // Static asset naming
         assetFileNames: (assetInfo) => {
-          const info = assetInfo.name.split('.')
-          const ext = info[info.length - 1]
-          if (/\.(png|jpe?g|svg|gif|tiff|bmp|ico)$/i.test(assetInfo.name)) {
-            return `static/media/[name]-[hash][extname]`
+          const info = assetInfo.name.split('.');
+          const ext = info[info.length - 1];
+          
+          if (/\.(css)$/.test(assetInfo.name)) {
+            return `static/css/[name].[hash].${ext}`;
           }
-          if (/\.(css)$/i.test(assetInfo.name)) {
-            return `static/css/[name]-[hash][extname]`
+          
+          if (/\.(png|jpe?g|gif|svg|ico|webp)$/.test(assetInfo.name)) {
+            return `static/images/[name].[hash].${ext}`;
           }
-          return `static/${ext}/[name]-[hash][extname]`
+          
+          if (/\.(woff2?|ttf|otf|eot)$/.test(assetInfo.name)) {
+            return `static/fonts/[name].[hash].${ext}`;
+          }
+          
+          return `static/[name].[hash].${ext}`;
         },
-        chunkFileNames: 'static/js/[name]-[hash].js',
-        entryFileNames: 'static/js/[name]-[hash].js'
+        
+        // JavaScript chunk naming
+        chunkFileNames: 'static/js/[name].[hash].js',
+        entryFileNames: 'static/js/[name].[hash].js',
       }
     },
     
     // Optimization
+    minify: 'terser',
     terserOptions: {
       compress: {
         drop_console: true,
         drop_debugger: true
       }
-    }
+    },
+    
+    // Source maps for debugging
+    sourcemap: process.env.NODE_ENV === 'development',
+    
+    // Target modern browsers (PyQt6 WebEngine uses Chromium)
+    target: 'es2018',
+    
+    // Chunk size warnings
+    chunkSizeWarningLimit: 1000,
   },
   
   // Development server
   server: {
-    port: 3000,
-    open: false, // PyQt6 will handle opening
     host: 'localhost',
-    cors: true,
-    hmr: {
-      port: 3001,
+    port: 5173,
+    strictPort: false,
+    open: false, // Don't auto-open browser in development
+    
+    // CORS configuration for PyQt6 WebEngine
+    cors: {
+      origin: true,
+      credentials: true,
+    },
+    
+    // Headers for PyQt6 WebEngine compatibility
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
+      'Access-Control-Allow-Headers': 'X-Requested-With, content-type, Authorization',
     }
   },
   
-  // Preview server
+  // Preview server (for production testing)
   preview: {
+    host: 'localhost',
     port: 4173,
-    open: false
+    strictPort: false,
+    open: false,
+    cors: true,
   },
   
   // Path resolution
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src'),
-      '@components': path.resolve(__dirname, './src/components'),
-      '@hooks': path.resolve(__dirname, './src/hooks'),
-      '@utils': path.resolve(__dirname, './src/utils'),
-      '@assets': path.resolve(__dirname, './src/assets')
+      '@': resolve(__dirname, './src'),
+      '@components': resolve(__dirname, './src/components'),
+      '@utils': resolve(__dirname, './src/utils'),
+      '@assets': resolve(__dirname, './src/assets'),
     }
   },
   
   // CSS configuration
   css: {
-    postcss: './postcss.config.js',
-    devSourcemap: true
-  },
-  
-  // Environment variables
-  define: {
-    __APP_VERSION__: JSON.stringify(process.env.npm_package_version),
-    __DEV__: process.env.NODE_ENV === 'development',
-  },
-  
-  // Testing configuration (Vitest)
-  test: {
-    globals: true,
-    environment: 'jsdom',
-    setupFiles: ['./src/setupTests.js'],
-    css: true,
-    coverage: {
-      reporter: ['text', 'json', 'html', 'lcov'],
-      exclude: [
-        'node_modules/',
-        'src/setupTests.js',
-        '**/*.test.{js,jsx}',
-        '**/__tests__/**'
+    devSourcemap: true,
+    modules: {
+      localsConvention: 'camelCase',
+    },
+    postcss: {
+      plugins: [
+        require('tailwindcss'),
+        require('autoprefixer'),
       ]
     }
   },
   
-  // Optimized dependencies
+  // Define global constants
+  define: {
+    __APP_VERSION__: JSON.stringify(process.env.npm_package_version || '2.0.0'),
+    __BUILD_TIME__: JSON.stringify(new Date().toISOString()),
+    __IS_PYQT__: 'typeof qt !== "undefined"',
+  },
+  
+  // Environment variables
+  envPrefix: ['VITE_', 'PYPDF_'],
+  
+  // Optimization
   optimizeDeps: {
     include: [
       'react',
       'react-dom',
-      'lucide-react'
+      'lucide-react',
+      'pdfjs-dist'
     ],
-    exclude: []
+    exclude: [
+      // Exclude PDF.js worker from optimization (loaded from CDN)
+      'pdfjs-dist/build/pdf.worker.js'
+    ]
   },
   
-  // Build target
+  // Worker configuration
+  worker: {
+    format: 'es'
+  },
+  
+  // Experimental features
+  experimental: {
+    renderBuiltUrl(filename, { hostType }) {
+      // Handle different host types for PyQt6 integration
+      if (hostType === 'js') {
+        return { js: `"./${filename}"` };
+      }
+      return { relative: true };
+    }
+  },
+  
+  // Plugin-specific configurations
   esbuild: {
-    target: 'es2015'
-  },
-  
-  // Base path for deployment
-  base: './',
-  
-  // Public directory
-  publicDir: 'public'
+    // JSX configuration
+    jsxFactory: 'React.createElement',
+    jsxFragment: 'React.Fragment',
+    
+    // Remove console logs in production
+    drop: process.env.NODE_ENV === 'production' ? ['console', 'debugger'] : [],
+  }
 })
