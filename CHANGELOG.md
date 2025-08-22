@@ -4,6 +4,26 @@ Bu dosya PyPDF-Tools projesinin tüm önemli değişikliklerini dokümante eder.
 
 Format [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) standardına dayanır ve bu proje [Semantic Versioning](https://semver.org/spec/v2.0.0.html) kullanır.
 
+
+
+## [3.0.0] - 2025-08-2025
+-Hibrit Mimari: React frontend ile PyQt6 backend entegrasyonu
+-PDF Görüntüleyici: Modern React tabanlı PDF görüntüleme arayüzü
+-Annotation Sistemi:
+  1. Vurgulama (highlighting)
+  2. Metin notları
+  3. Yapışkan notlar
+  4. Çizim araçları
+-Navigasyon Özellikleri:
+  1. Sayfa küçük resimleri (thumbnails)
+  2. Yer işaretleri (bookmarks)
+  3. Gelişmiş arama
+
+-AI Entegrasyonu (Beta):
+  1. PDF özetleme
+  2. İçerik analizi
+  3. Akıllı metin çıkarma
+
 ## [2.0.0] - 2024-12-15
 
 ### Eklenen
