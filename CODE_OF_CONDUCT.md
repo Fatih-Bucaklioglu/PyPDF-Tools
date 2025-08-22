@@ -1,144 +1,185 @@
-# Davranış Kuralları
+# Contributor Covenant Davranış Kuralları
 
 ## Taahhüdümüz
 
-Açık ve kapsayıcı bir ortam yaratmak amacıyla, katkıda bulunanlar ve maintainerlar olarak, projemize ve topluluğumuza katılımı yaş, vücut ölçüsü, engellilik durumu, etnik köken, cinsiyet kimliği ve ifadesi, deneyim seviyesi, eğitim durumu, sosyo-ekonomik durum, uyruk, kişisel görünüm, ırk, din veya cinsel kimlik ve yönelim ayrımı olmaksızın herkes için tacizden uzak bir deneyim haline getirmeyi taahhüt ediyoruz.
+Açık ve misafirperver bir ortam yaratmak adına, katkıda bulunanlar ve sürdürücüler olarak, projeye ve topluluğumuza katılımı yaş, beden ölçüsü, engellilik durumu, etnik köken, cinsiyet kimliği ve ifadesi, deneyim seviyesi, eğitim, sosyo-ekonomik durum, milliyet, kişisel görünüm, ırk, din veya cinsel kimlik ve yönelim fark etmeksizin herkes için tacizden uzak bir deneyim yapmayı taahhüt ederiz.
 
 ## Standartlarımız
 
-Olumlu bir ortam yaratmaya katkıda bulunan davranış örnekleri şunlardır:
+Olumlu bir ortam yaratmaya katkıda bulunan davranış örnekleri:
 
 * Kapsayıcı dil kullanmak
-* Farklı bakış açıları ve deneyimlere saygı göstermek
+* Farklı bakış açılarına ve deneyimlere saygı göstermek
 * Yapıcı eleştiriyi nezaketle kabul etmek
-* Topluluk için en iyi olana odaklanmak
-* Diğer topluluk üyelerine empati göstermek
+* Topluluk için en iyisinin ne olduğuna odaklanmak
+* Diğer topluluk üyelerine karşı empati göstermek
 
-Kabul edilemez davranış örnekleri şunlardır:
+Kabul edilemez davranış örnekleri:
 
-* Cinselleştirilmiş dil veya imgelerin kullanımı ve istenmeyen cinsel ilgi veya yaklaşımlar
-* Trolleme, hakaret/aşağılayıcı yorumlar ve kişisel veya politik saldırılar
-* Kamu veya özel taciz
-* Başkalarının fiziksel veya elektronik adres gibi özel bilgilerini açık izin olmadan yayınlamak
-* Profesyonel bir ortamda makul olmayacak şekilde değerlendirilebilecek diğer davranışlar
+* Cinselleştirilmiş dil veya imgelerin kullanılması ve istenmeyen cinsel ilgi veya yaklaşımlar
+* Trolleme, aşağılayıcı/küçümseyici yorumlar ve kişisel ya da politik saldırılar
+* Açık veya özel taciz
+* Başkalarının fiziksel veya elektronik adres gibi özel bilgilerini açık izin olmaksızın yayınlamak
+* Profesyonel ortamda makul olarak uygunsuz sayılabilecek diğer davranışlar
 
 ## Sorumluluklarımız
 
-Proje maintainerleri, kabul edilebilir davranış standartlarını açıklama sorumluluğundadır ve kabul edilemez davranışlara karşı adil ve uygun düzeltici eylemler almak zorundadırlar.
+Proje yürütücüleri, kabul edilebilir davranış standartlarını açıklığa kavuşturmakla sorumludur ve kabul edilemez davranışlara yanıt olarak uygun ve adil düzeltici eylemler almalaları beklenir.
 
-Proje maintainerleri, bu Davranış Kuralları'na uymayan yorumları, commit'leri, kodu, wiki düzenlemelerini, issue'ları ve diğer katkıları kaldırma, düzenleme veya reddetme hakkına ve sorumluluğuna sahiptir; ayrıca uygunsuz, tehditkar, saldırgan veya zararlı olarak değerlendirdikleri davranışlar için herhangi bir katkıda bulunanı geçici veya kalıcı olarak yasaklayabilirler.
+Proje yürütücüleri, bu Davranış Kuralları ile uyumlu olmayan yorumları, commit'leri, kodu, wiki düzenlemelerini, issue'ları ve diğer katkıları kaldırma, düzenleme veya reddetme hakkına sahiptir. Ayrıca uygunsız, tehdit edici, saldırgan veya zararlı olduğunu düşündükleri diğer davranışlar nedeniyle herhangi bir katkıda bulunanı geçici veya kalıcı olarak yasaklama hakkına sahiptir.
 
 ## Kapsam
 
-Bu Davranış Kuralları, hem proje alanlarında hem de bir kişi projeyi veya topluluğunu kamusal alanlarda temsil ettiğinde geçerlidir. Projeyi veya topluluğunu temsil etmeye örnek olarak resmi proje e-posta adresini kullanmak, resmi sosyal medya hesabından gönderi yapmak veya çevrimiçi ya da çevrimdışı bir etkinlikte atanmış temsilci olarak hareket etmek gösterilebilir. Projenin temsili, proje maintainerleri tarafından daha ayrıntılı olarak tanımlanabilir ve açıklığa kavuşturulabilir.
+Bu Davranış Kuralları, hem proje alanlarında hem de bir kişinin projeyi veya topluluğunu temsil ettiği kamuya açık alanlarda geçerlidir. Projeyi veya topluluğu temsil etme örnekleri arasında resmi proje e-posta adresini kullanma, resmi sosyal medya hesabından gönderi paylaşma veya çevrimiçi ya da çevrimdışı bir etkinlikte atanmış temsilci olarak hareket etme yer alır. Projeyi temsil etmenin tanımı, proje yürütücüleri tarafından daha da netleştirilebilir ve ayrıntılandırılabilir.
 
 ## Uygulama
 
-Kötü muamele, taciz veya başka türde kabul edilemez davranış örnekleri, proje ekibiyle [fatih@pypdf-tools.com](mailto:fatih@pypdf-tools.com) adresinden iletişime geçerek bildirilebilir. Tüm şikayetler incelenecek ve araştırılacaktır ve duruma uygun ve gerekli görülen bir yanıtla sonuçlanacaktır. Proje ekibi, bir olayın bildirimcisiyle ilgili gizliliği korumakla yükümlüdür. Belirli uygulama politikalarının daha fazla ayrıntısı ayrıca gönderilebilir.
+Taciz edici, rahatsız edici veya başka bir şekilde kabul edilemez davranışlar [fatih.bucaklioglu@example.com] adresinden proje ekibine bildirilebilir. Tüm şikayetler incelenip araştırılacak ve duruma uygun ve gerekli görülen bir yanıtla sonuçlanacaktır. Proje ekibi, olay bildiren kişinin kimliğini gizli tutmakla yükümlüdür. Belirli uygulama politikalarıyla ilgili daha fazla ayrıntı ayrıca yayınlanabilir.
 
-Bu Davranış Kuralları'nı iyi niyetle takip etmeyen veya uygulama proje maintainerlerinin belirledikleri geçici veya kalıcı sonuçlarla karşılaşabilirler.
+Davranış Kuralları'nı iyi niyetle takip etmeyen veya uygulamayan proje yürütücüleri, projenin liderliğindeki diğer üyeler tarafından belirlenen geçici veya kalıcı sonuçlarla karşı karşıya kalabilir.
 
-## Atıf
+## Katkıda Bulunanlar İçin Özel Rehberlik
 
-Bu Davranış Kuralları, [Contributor Covenant](https://www.contributor-covenant.org) sürüm 1.4'ten uyarlanmıştır. Contributor Covenant'a [https://www.contributor-covenant.org/version/1/4/code-of-conduct.html](https://www.contributor-covenant.org/version/1/4/code-of-conduct.html) adresinden ulaşılabilir.
+### Teknik Tartışmalarda
 
-Bu Davranış Kuralları hakkında yaygın sorulara verilen yanıtlar için bkz. [https://www.contributor-covenant.org/faq](https://www.contributor-covenant.org/faq)
+**✅ Yapın:**
+- Kodu, kişiyi değil eleştirin
+- "Bu yaklaşım şu sebeplerden dolayı sorunlu olabilir..." şeklinde objektif açıklamalar yapın
+- Alternatif çözümler önerirken yapıcı olun
+- Yeni geliştiricilere sabırla açıklamalar yapın
+- Hatalarınızı kabul edin ve öğrenme fırsatı olarak görün
 
-## PyPDF-Tools Topluluk Ek Kuralları
+**❌ Yapmayın:**
+- "Bu kod berbat" gibi kişisel saldırılar yapmayın
+- Deneyim seviyesini küçümseyici şekilde vurgulamayın
+- Sarkastik veya küçümseyici ton kullanmayın
+- Başka projeleri olumsuz karşılaştırma yapmayın
 
-### 🤝 Yardımlaşma Ruhu
-- Yeni başlayanları destekleyin ve sabırlı olun
-- Sorulara samimi ve yapıcı cevaplar verin  
-- Kod incelemelerinde hem olumlu hem de olumsuz geri bildirimleri dengeli şekilde sunun
-- Herkesin öğrenme sürecinde olduğunu unutmayın
+### Issue ve PR'larda
 
-### 💻 Teknik Tartışmalar
-- Teknik argümanlarınızı kanıt ve örneklerle destekleyin
-- Alternatif çözümlere açık olun
-- "Bu yanlış" yerine "Bu durumda şöyle yapılabilir" gibi yapıcı ifadeler kullanın
-- Performans, güvenlik ve kullanılabilirlik önceliklerimizi göz önünde bulundurun
+**✅ Yapın:**
+- Açık ve yapıcı geri bildirim verin
+- Problemleri çözmek için birlikte çalışın
+- Farklı yaklaşımları saygıyla dinleyin
+- Yeni fikirlere açık olun
 
-### 🌍 Dil ve İletişim
-- Hem Türkçe hem de İngilizce iletişim kabul edilir
-- Açık ve anlaşılır dil kullanın
-- Teknik terimleri gerektiğinde açıklayın
-- Kültürel farklılıklara saygı gösterin
+**❌ Yapmayın:**
+- Acil olmayan durumlar için sürekli mention atmayın
+- Maintainer'ları zorlamayın veya baskı yapmayın
+- Off-topic tartışmalara girmeyin
 
-### 📝 Dokümantasyon ve Kod Kalitesi
-- Kod örneklerini eksiksiz ve çalışır durumda paylaşın
-- Dokümantasyon katkıları için doğruluk kontrolü yapın
-- Sadece kendi test ettiğiniz çözümleri önerin
-- Güvenlik açısından riskli kod örneklerinden kaçının
+### Topluluk Etkileşimlerinde
 
-### 🐛 Sorun Bildirme
-- Detaylı ve yeniden üretilebilir bug reportları yazın
-- Sistem bilgilerini (OS, Python version, vb.) ekleyin
-- Log dosyaları paylaşırken hassas bilgileri çıkarın
-- Duplicate issue'lardan kaçınmak için önce arama yapın
+**✅ Yapın:**
+- Yardım isteyen kişilere patient yaklaşın
+- Kaynakları ve dökümanları paylaşın
+- Teşekkür edin ve katkıları takdir edin
+- Çeşitliliği ve dahil etmeyi destekleyin
 
-### 🎯 Feature Requests
-- Use case'inizi açıkça belirtin
-- Mevcut alternatifler varsa bunları da belirtin  
-- Implementasyon önerilerinizi paylaşın
-- Performans ve kullanılabilirlik etkilerini düşünün
+**❌ Yapmayın:**
+- "RTFM" (Read The F* Manual) gibi düşmanca cevaplar vermeyin  
+- Soru sormayı caydırıcı davranışlar sergilemeyin
+- Politik veya dini tartışmalara girmeyin
 
-### ⚡ İletişim Kanalları
+## Şikayet Süreci
 
-**Discord**: Anlık sohbet ve hızlı yardım
-- #genel-sohbet: Genel tartışmalar
-- #yardım: Kullanıcı desteği  
-- #geliştirici: Kod ve teknik tartışmalar
-- #beta-test: Yeni sürüm testleri
+### 1. İlk Adım
+Eğer Davranış Kuralları'nı ihlal eden bir durum yaşadıysanız:
 
-**GitHub Issues**: Resmi bug report ve feature request
-**GitHub Discussions**: Uzun süreli tartışmalar ve soru-cevap
-**Telegram**: Türkçe topluluk sohbeti
+- Durumu belgelendirin (screenshot, link, vb.)
+- Mümkünse ilk olarak kişiyle doğrudan iletişim kurmayı deneyin
+- Eğer rahatsızlık devam ederse resmi şikayet sürecini başlatın
 
-### 🚫 Kabul Edilemeyen İçerikler
+### 2. Resmi Şikayet
+**E-posta:** [fatih.bucaklioglu@example.com]  
+**Konu:** "PyPDF-Tools - Davranış Kuralları İhlali Raporu"
 
-Aşağıdaki türde içerikler kesinlikle yasaktır:
-- Telif hakkı ihlali eden örnekler veya kodlar
-- Kişisel/kurumsal hassas belgeler içeren test dosyaları  
-- Malware, virus veya zararlı kod içeren dosyalar
-- Yasa dışı içerik işlemeye yönelik örnekler
-- Spam veya reklam içerikli gönderiler
+**Şikayetinizde aşağıdaki bilgileri belirtin:**
+- Olay tarihi ve zamanı
+- İlgili kişi(ler)in kimliği
+- Davranışın detaylı açıklaması
+- Varsa kanıtlar (screenshot, log, vb.)
+- Durumun size etkisi
+- Çözüm önerileriniz (varsa)
 
-### 📊 Topluluk Moderasyonu
+### 3. İnceleme Süreci
+- Şikayetler 48 saat içinde onaylanır
+- Araştırma 5-7 iş günü içinde tamamlanır
+- İlgili tüm taraflardan bilgi alınır
+- Karar ve eylem planı bildirilir
 
-**1. Seviye - Uyarı**: İlk ihlalde nazik uyarı
-**2. Seviye - Geçici Uzaklaştırma**: 1-7 gün arası
-**3. Seviye - Uzun Süreli Uzaklaştırma**: 1-3 ay arası  
-**4. Seviye - Kalıcı Yasaklama**: Ciddi ihlaller için
+### 4. Olası Sonuçlar
+İhlalin ciddiyetine bağlı olarak:
 
-### 🏆 Pozitif Katkı Örnekleri
+- **Uyarı:** Özel uyarı mesajı
+- **Geçici Yasaklama:** 1 hafta - 3 ay arası platform erişimi yasağı
+- **Kalıcı Yasaklama:** Topluluktan kalıcı çıkarma
+- **Hesap Askıya Alma:** GitHub hesabının moderation ekibine rapor edilmesi
 
-- Yeni kullanıcıların sorularını sabırla cevaplayan topluluk üyeleri
-- Düzenli kod incelemeleri yapan developers  
-- Dokümantasyon iyileştirmeleri gönderen katkıcılar
-- Bug tespiti ve çözümü için zaman ayıran test ediciler
-- Başkalarının öğrenmesine yardımcı olan mentorlar
+## Temyiz Süreci
 
-### 📞 İletişim
+Aldığınız kararın adil olmadığını düşünüyorsanız:
 
-**Davranış Kuralları İhlali Bildirimi**:
-- E-posta: conduct@pypdf-tools.com
-- Discord: Moderator'lara özel mesaj
-- Anonim Form: [Davranış Kuralları Şikayet Formu](https://forms.gle/pypdf-conduct-report)
+1. Karardan sonraki 14 gün içinde temyiz başvurusu yapın
+2. Yeni kanıtlar veya bilgiler sunun
+3. Temyiz, farklı bir moderatör tarafından incelenir
+4. Temyiz kararı nihaidir
 
-**Moderasyon Ekibi**:
-- Fatih Bucaklıoğlu (@Fatih-Bucaklioglu) - Lead Maintainer
-- Topluluk Moderatörleri (Discord/Telegram)
+## Pozitif Topluluk Kültürü
 
-Tüm şikayetler 48 saat içerisinde değerlendirilir ve uygun aksiyon alınır.
+### Kapsayıcı Dil Kullanımı
+
+**Tercih edilen ifadeler:**
+- "Bu yaklaşımı farklı şekilde ele alabilir miyiz?"
+- "Şu konuda yardımınıza ihtiyacım var"
+- "Harika bir nokta, ek olarak şunu da düşünebiliriz"
+- "Bu durumu daha iyi anlamaya yardım eder misiniz?"
+
+### Çeşitlilik ve Dahil Etme
+
+- Farklı kültürlerden gelenlerin zaman dilimlerini dikkate alın
+- Teknik jargonu kullanırken açıklama yapın
+- İngilizce ana dili olmayan katkıcılar için sabırlı olun
+- Accessibility konularında dikkatli olun
+
+### Mentor Olmak
+
+Deneyimli geliştiriciler için rehberlik:
+
+- Code review'larda öğretici yaklaşım benimseyin
+- Resource'ları ve öğrenme materyallerini paylaşın
+- Pair programming fırsatları yaratın
+- Newcomer'ları projede çeşitli alanlara yönlendirin
+
+## İletişim Kanalları
+
+### Resmi Kanallar
+- **GitHub Issues**: Bug raporları ve özellik önerileri
+- **GitHub Discussions**: Genel tartışmalar
+- **Pull Requests**: Code katkıları
+- **Email**: [fatih.bucaklioglu@example.com]
+
+### Topluluk Kuralları
+Her kanalın kendine özel kuralları olabilir, ancak bu Davranış Kuralları tüm platformlarda geçerlidir.
+
+## Değişiklikler ve Güncellemeler
+
+Bu Davranış Kuralları zaman zaman güncellenebilir:
+
+- Büyük değişiklikler toplulukla tartışılır
+- Tüm değişiklikler CHANGELOG.md'de dokumentlanır
+- Kritik değişiklikler e-posta ile duyurulur
+
+## Attribution
+
+Bu Davranış Kuralları [Contributor Covenant](https://www.contributor-covenant.org) sürüm 2.1'den uyarlanmıştır. Detaylar için [https://www.contributor-covenant.org/version/2/1/code_of_conduct.html](https://www.contributor-covenant.org/version/2/1/code_of_conduct.html) adresini ziyaret edin.
+
+Topluluk Etkisi Rehberi, [Mozilla'nın davranış kuralları uygulama merdiveni](https://github.com/mozilla/diversity)'nden ilham alınmıştır.
+
+Bu davranış kuralları hakkında yaygın soruların cevapları için [https://www.contributor-covenant.org/faq](https://www.contributor-covenant.org/faq) adresine bakın. Çevirileri [https://www.contributor-covenant.org/translations](https://www.contributor-covenant.org/translations) adresinde bulabilirsiniz.
 
 ---
 
-## 🌟 Son Söz
-
-PyPDF-Tools topluluğu, öğrenmeye, gelişmeye ve birlikte daha iyi yazılımlar yaratmaya odaklanmış bir topluluktur. Bu kurallar, herkesin güvenli ve üretken bir ortamda katkıda bulunabilmesi için vardır.
-
-**Hatırlatma**: Bu kurallar statik değildir. Topluluk büyüdükçe ve ihtiyaçlar değiştikçe, kurallarımızı da topluluğun görüşlerini alarak güncelleyeceğiz.
-
-Sorularınız için [GitHub Discussions](https://github.com/Fatih-Bucaklioglu/PyPDF-Tools/discussions) bölümünü kullanabilirsiniz.
-
-**Teşekkürler** - Saygılı ve kapsayıcı topluluğumuzun bir parçası olduğunuz için! 🙏
+**Son güncelleme:** 2024-01-15  
+**Sürüm:** 2.1  
+**İletişim:** [fatih.bucaklioglu@example.com]
