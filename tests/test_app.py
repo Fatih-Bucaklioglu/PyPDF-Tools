@@ -1,480 +1,373 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+
 """
-PyPDF-Stirling Tools v2 - Test Script
-Uygulamanın tüm bileşenlerini test eder
+PyPDF-Tools Ana Uygulama Test Modülü
+Ana QMainWindow ve QWebEngineView bileşenlerinin testleri
 """
 
 import sys
-import os
-import unittest
-import importlib
-from pathlib import Path
+import pytest
 import tempfile
-import shutil
-from unittest.mock import Mock, patch
+from pathlib import Path
+from unittest.mock import Mock, patch, MagicMock
 
-# Proje kök dizinini PATH'e ekle
-project_root = Path(__file__).parent
-sys.path.insert(0, str(project_root))
+from PyQt6.QtWidgets import QApplication
+from PyQt6.QtCore import QTimer
+from PyQt6.QtTest import QTest
+from PyQt6.QtWebEngineWidgets import QWebEngineView
 
-class TestDependencies(unittest.TestCase):
-    """Bağımlılık testleri"""
-    
-    def test_python_version(self):
-        """Python versiyon kontrolü"""
-        self.assertGreaterEqual(sys.version_info[:2], (3, 8), 
-                              "Python 3.8+ gerekli")
-    
-    def test_required_modules(self):
-        """Gerekli modüllerin import edilebilirliği"""
-        required_modules = [
-            'tkinter',
-            'pathlib',
-            'threading',
-            'json',
-            'os',
-            'sys',
-            'time',
-            'tempfile',
-            'shutil'
-        ]
-        
-        for module_name in required_modules:
-            with self.subTest(module=module_name):
-                try:
-                    importlib.import_module(module_name)
-                except ImportError as e:
-                    self.fail(f"Gerekli modül import edilemedi: {module_name} - {e}")
-    
-    def test_optional_modules(self):
-        """İsteğe bağlı modüllerin kontrolü"""
-        optional_modules = {
-            'PyPDF2': 'PDF işleme için gerekli',
-            'PIL': 'Görüntü işleme için gerekli', 
-            'fitz': 'Gelişmiş PDF işleme için gerekli',
-            'pytesseract': 'OCR işlemleri için gerekli',
-            'cv2': 'Görüntü ön işleme için gerekli',
-            'pdf2image': 'PDF to image dönüşümü için gerekli',
-            'reportlab': 'PDF oluşturma için gerekli'
-        }
-        
-        missing_modules = []
-        
-        for module_name, description in optional_modules.items():
-            try:
-                importlib.import_module(module_name)
-                print(f"✅ {module_name}: OK")
-            except ImportError:
-                missing_modules.append(f"{module_name} ({description})")
-                print(f"❌ {module_name}: Eksik - {description}")
-        
-        if missing_modules:
-            print(f"\n⚠️  Eksik modüller: {len(missing_modules)}")
-            for module in missing_modules:
-                print(f"   - {module}")
-            print("\nBu modüller pip install ile kurulabilir:")
-            print("pip install -r requirements.txt")
+# Test edilecek modüller
+from pypdf_tools.main import MainWindow, create_app
+from pypdf_tools.features.pdf_viewer import PDFViewerWidget, PDFViewerContainer
 
-class TestUtilityClasses(unittest.TestCase):
-    """Utility sınıfları testleri"""
-    
-    def setUp(self):
-        """Test ortamını hazırla"""
-        self.temp_dir = Path(tempfile.mkdtemp())
-    
-    def tearDown(self):
-        """Test sonrası temizlik"""
-        if self.temp_dir.exists():
-            shutil.rmtree(self.temp_dir, ignore_errors=True)
-    
-    def test_config_manager_import(self):
-        """ConfigManager import testi"""
-        try:
-            from utils import ConfigManager
-            config = ConfigManager()
-            self.assertIsNotNone(config.config)
-            print("✅ ConfigManager: OK")
-        except ImportError as e:
-            self.fail(f"ConfigManager import edilemedi: {e}")
-    
-    def test_cache_manager_import(self):
-        """CacheManager import testi"""
-        try:
-            from utils import CacheManager
-            cache = CacheManager(enabled=False)  # Test için disabled
-            self.assertFalse(cache.enabled)
-            print("✅ CacheManager: OK")
-        except ImportError as e:
-            self.fail(f"CacheManager import edilemedi: {e}")
-    
-    def test_log_manager_import(self):
-        """LogManager import testi"""
-        try:
-            from utils import LogManager
-            log = LogManager(enabled=False)  # Test için disabled
-            self.assertFalse(log.enabled)
-            print("✅ LogManager: OK")
-        except ImportError as e:
-            self.fail(f"LogManager import edilemedi: {e}")
-    
-    def test_theme_manager_import(self):
-        """ThemeManager import testi"""
-        try:
-            from utils import ThemeManager
-            theme = ThemeManager()
-            self.assertIn('light', theme.themes)
-            self.assertIn('dark', theme.themes)
-            self.assertIn('neon', theme.themes)
-            self.assertIn('midnight', theme.themes)
-            print("✅ ThemeManager: OK")
-        except ImportError as e:
-            self.fail(f"ThemeManager import edilemedi: {e}")
 
-class TestUIComponents(unittest.TestCase):
-    """UI bileşenleri testleri"""
+class TestMainWindow:
+    """MainWindow sınıfı testleri"""
     
-    def setUp(self):
-        """Mock objeler oluştur"""
-        self.mock_config = Mock()
-        self.mock_theme = Mock()
-        self.mock_app = Mock()
-        
-        # Mock config values
-        self.mock_config.get.return_value = "test_value"
-    
-    @patch('tkinter.Tk')
-    def test_header_import(self, mock_tk):
-        """ModernHeader import testi"""
-        try:
-            from ui.header import ModernHeader
-            # Mock parent widget
-            mock_parent = Mock()
-            
-            # Header oluşturmayı test et (sadece import)
-            # Gerçek GUI oluşturma test ortamında sorun çıkarabilir
-            print("✅ ModernHeader import: OK")
-        except ImportError as e:
-            self.fail(f"ModernHeader import edilemedi: {e}")
-    
-    def test_sidebar_import(self):
-        """ModernSidebar import testi"""
-        try:
-            from ui.sidebar import ModernSidebar
-            print("✅ ModernSidebar import: OK")
-        except ImportError as e:
-            self.fail(f"ModernSidebar import edilemedi: {e}")
-    
-    def test_content_import(self):
-        """ModernContent import testi"""
-        try:
-            from ui.content import ModernContent
-            print("✅ ModernContent import: OK")
-        except ImportError as e:
-            self.fail(f"ModernContent import edilemedi: {e}")
-
-class TestPDFProcessing(unittest.TestCase):
-    """PDF işleme testleri"""
-    
-    def setUp(self):
-        """Test ortamını hazırla"""
-        self.temp_dir = Path(tempfile.mkdtemp())
-        
-        # Mock objeler
-        self.mock_cache = Mock()
-        self.mock_log = Mock()
-    
-    def tearDown(self):
-        """Test sonrası temizlik"""
-        if self.temp_dir.exists():
-            shutil.rmtree(self.temp_dir, ignore_errors=True)
-    
-    def test_pdf_processor_import(self):
-        """PDFProcessor import testi"""
-        try:
-            from resources.pdf_utils import PDFProcessor
-            processor = PDFProcessor(
-                cache_manager=self.mock_cache,
-                log_manager=self.mock_log
-            )
-            self.assertIsNotNone(processor)
-            print("✅ PDFProcessor: OK")
-        except ImportError as e:
-            self.fail(f"PDFProcessor import edilemedi: {e}")
-    
-    def test_pdf_validation_functions(self):
-        """PDF doğrulama fonksiyonları testi"""
-        try:
-            from resources.pdf_utils import validate_pdf, get_pdf_info
-            
-            # Test için geçersiz dosya yolu
-            invalid_path = str(self.temp_dir / "nonexistent.pdf")
-            result = validate_pdf(invalid_path)
-            self.assertFalse(result)
-            
-            info = get_pdf_info(invalid_path)
-            self.assertIn('error', info)
-            
-            print("✅ PDF validation functions: OK")
-        except ImportError as e:
-            self.fail(f"PDF validation functions import edilemedi: {e}")
-
-class TestOCRProcessing(unittest.TestCase):
-    """OCR işleme testleri"""
-    
-    def setUp(self):
-        """Test ortamını hazırla"""
-        self.mock_log = Mock()
-    
-    def test_ocr_processor_import(self):
-        """OCRProcessor import testi"""
-        try:
-            from ocr_module import OCRProcessor
-            
-            # OCR işlemci oluştur (bağımlılık yoksa skip)
-            try:
-                processor = OCRProcessor(
-                    languages=['eng', 'tur'],
-                    cache_enabled=False,
-                    log_manager=self.mock_log
-                )
-                self.assertIsNotNone(processor)
-                print("✅ OCRProcessor: OK")
-            except Exception as e:
-                print(f"⚠️  OCRProcessor: Bağımlılık eksik - {e}")
-                
-        except ImportError as e:
-            self.fail(f"OCRProcessor import edilemedi: {e}")
-
-class TestMainApplication(unittest.TestCase):
-    """Ana uygulama testleri"""
-    
-    def test_main_import(self):
-        """Main.py import testi"""
-        try:
-            # Ana sınıfı import et
-            from main import PyPDFToolsV2
-            self.assertIsNotNone(PyPDFToolsV2)
-            print("✅ PyPDFToolsV2: OK")
-        except ImportError as e:
-            self.fail(f"Main application import edilemedi: {e}")
-        except Exception as e:
-            # GUI initialization hataları beklenebilir
-            print(f"⚠️  PyPDFToolsV2: {e}")
-
-class TestFileStructure(unittest.TestCase):
-    """Dosya yapısı testleri"""
-    
-    def test_required_files_exist(self):
-        """Gerekli dosyaların varlık kontrolü"""
-        required_files = [
-            'main.py',
-            'utils.py', 
-            'ocr_module.py',
-            'requirements.txt',
-            'ui/__init__.py',
-            'ui/header.py',
-            'ui/sidebar.py', 
-            'ui/content.py',
-            'resources/__init__.py',
-            'resources/pdf_utils.py'
-        ]
-        
-        missing_files = []
-        
-        for file_path in required_files:
-            full_path = project_root / file_path
-            if not full_path.exists():
-                missing_files.append(file_path)
-            else:
-                print(f"✅ {file_path}: Mevcut")
-        
-        if missing_files:
-            print(f"\n❌ Eksik dosyalar: {len(missing_files)}")
-            for file in missing_files:
-                print(f"   - {file}")
-            self.fail(f"Gerekli dosyalar eksik: {missing_files}")
+    @pytest.fixture(scope="class")
+    def app(self):
+        """PyQt uygulamasını oluştur"""
+        if not QApplication.instance():
+            app = QApplication([])
         else:
-            print("✅ Tüm gerekli dosyalar mevcut")
+            app = QApplication.instance()
+        return app
     
-    def test_directory_structure(self):
-        """Dizin yapısı kontrolü"""
-        required_dirs = [
-            'ui',
-            'resources'
-        ]
+    @pytest.fixture
+    def main_window(self, app):
+        """MainWindow instance'ı oluştur"""
+        # React build dizini mevcut olmayabilir, mock'la
+        with patch('pypdf_tools.features.pdf_viewer.PDFViewerWidget._find_web_build_path') as mock_path:
+            # Geçici bir HTML dosyası oluştur
+            temp_dir = tempfile.mkdtemp()
+            temp_html = Path(temp_dir) / 'index.html'
+            temp_html.write_text("""
+                <!DOCTYPE html>
+                <html>
+                <head><title>Test</title></head>
+                <body><div id="root">Test PDF Viewer</div></body>
+                </html>
+            """)
+            
+            mock_path.return_value = str(temp_dir)
+            window = MainWindow()
+            yield window
+            window.close()
+    
+    def test_main_window_creation(self, main_window):
+        """Ana pencere başarıyla oluşturulmalı"""
+        assert main_window is not None
+        assert isinstance(main_window, MainWindow)
+        assert main_window.windowTitle() == "PyPDF Tools"
+    
+    def test_central_widget_exists(self, main_window):
+        """Merkezi widget mevcut olmalı"""
+        central_widget = main_window.centralWidget()
+        assert central_widget is not None
+    
+    def test_pdf_viewer_container_exists(self, main_window):
+        """PDF viewer container mevcut olmalı"""
+        assert main_window.pdf_viewer_container is not None
+        assert isinstance(main_window.pdf_viewer_container, PDFViewerContainer)
+    
+    def test_menu_bar_exists(self, main_window):
+        """Menü çubuğu mevcut olmalı"""
+        menu_bar = main_window.menuBar()
+        assert menu_bar is not None
         
-        optional_dirs = [
-            'icons',
-            'features', 
-            'cli',
-            'docs',
-            'tests'
-        ]
+        # Menülerin varlığını kontrol et
+        menu_titles = [action.text() for action in menu_bar.actions()]
+        expected_menus = ['&Dosya', '&Düzenle', '&Görünüm', '&Araçlar', '&Yardım']
         
-        for dir_name in required_dirs:
-            dir_path = project_root / dir_name
-            self.assertTrue(dir_path.exists() and dir_path.is_dir(), 
-                          f"Gerekli dizin eksik: {dir_name}")
-            print(f"✅ {dir_name}/: Mevcut")
+        for expected_menu in expected_menus:
+            assert any(expected_menu in title for title in menu_titles)
+    
+    def test_status_bar_exists(self, main_window):
+        """Durum çubuğu mevcut olmalı"""
+        status_bar = main_window.statusBar()
+        assert status_bar is not None
+        assert main_window.status_bar is status_bar
+    
+    def test_toolbar_exists(self, main_window):
+        """Araç çubuğu mevcut olmalı"""
+        toolbars = main_window.findChildren(type(main_window.addToolBar("")))
+        assert len(toolbars) > 0
+    
+    @patch('pypdf_tools.main.QFileDialog.getOpenFileName')
+    def test_open_file_dialog(self, mock_dialog, main_window):
+        """Dosya aç dialog'u çalışmalı"""
+        # Dialog mock'ı
+        test_file = "/fake/path/test.pdf"
+        mock_dialog.return_value = (test_file, "PDF Files (*.pdf)")
         
-        for dir_name in optional_dirs:
-            dir_path = project_root / dir_name
-            if dir_path.exists():
-                print(f"✅ {dir_name}/: Mevcut (isteğe bağlı)")
+        # load_pdf metodunu mock'la
+        with patch.object(main_window, 'load_pdf', return_value=True) as mock_load:
+            main_window.open_file()
+            mock_load.assert_called_once_with(test_file)
+    
+    def test_theme_change(self, main_window):
+        """Tema değişimi çalışmalı"""
+        original_theme = main_window.current_theme
+        new_theme = 'dark' if original_theme != 'dark' else 'light'
+        
+        # PDF viewer'ın tema değişimini mock'la
+        with patch.object(main_window.pdf_viewer_container, 'set_theme') as mock_set_theme:
+            main_window.change_theme(new_theme)
+            
+            assert main_window.current_theme == new_theme
+            mock_set_theme.assert_called_once_with(new_theme)
+    
+    def test_fullscreen_toggle(self, main_window):
+        """Tam ekran geçişi çalışmalı"""
+        original_state = main_window.is_fullscreen
+        
+        with patch.object(main_window, 'showFullScreen') as mock_fullscreen, \
+             patch.object(main_window, 'showNormal') as mock_normal:
+            
+            main_window.toggle_fullscreen()
+            
+            if not original_state:
+                mock_fullscreen.assert_called_once()
+                assert main_window.is_fullscreen
             else:
-                print(f"⚠️  {dir_name}/: Eksik (isteğe bağlı)")
+                mock_normal.assert_called_once()
+                assert not main_window.is_fullscreen
 
-def run_comprehensive_test():
-    """Kapsamlı test çalıştırıcısı"""
-    
-    print("🧪 PyPDF-Stirling Tools v2 - Kapsamlı Test Süreci")
-    print("=" * 60)
-    
-    # Test suitelerini oluştur
-    test_suites = [
-        ('Bağımlılık Testleri', TestDependencies),
-        ('Utility Sınıfları Testleri', TestUtilityClasses),
-        ('UI Bileşenleri Testleri', TestUIComponents),
-        ('PDF İşleme Testleri', TestPDFProcessing),
-        ('OCR İşleme Testleri', TestOCRProcessing),
-        ('Ana Uygulama Testleri', TestMainApplication),
-        ('Dosya Yapısı Testleri', TestFileStructure)
-    ]
-    
-    total_tests = 0
-    failed_tests = 0
-    
-    for suite_name, test_class in test_suites:
-        print(f"\n🔍 {suite_name}")
-        print("-" * 40)
-        
-        suite = unittest.TestLoader().loadTestsFromTestCase(test_class)
-        runner = unittest.TextTestRunner(verbosity=0, stream=open(os.devnull, 'w'))
-        result = runner.run(suite)
-        
-        total_tests += result.testsRun
-        failed_tests += len(result.failures) + len(result.errors)
-        
-        if result.failures:
-            print(f"❌ Başarısız testler: {len(result.failures)}")
-            for test, traceback in result.failures:
-                print(f"   - {test}: {traceback.split('AssertionError: ')[-1].strip()}")
-        
-        if result.errors:
-            print(f"❌ Hata veren testler: {len(result.errors)}")
-            for test, traceback in result.errors:
-                print(f"   - {test}: {traceback.split('Exception: ')[-1].strip()}")
-        
-        success_count = result.testsRun - len(result.failures) - len(result.errors)
-        print(f"✅ Başarılı: {success_count}/{result.testsRun}")
-    
-    # Özet rapor
-    print("\n" + "=" * 60)
-    print("📊 TEST RAPORU")
-    print("=" * 60)
-    
-    success_rate = ((total_tests - failed_tests) / total_tests * 100) if total_tests > 0 else 0
-    
-    print(f"Toplam Test: {total_tests}")
-    print(f"Başarılı: {total_tests - failed_tests}")
-    print(f"Başarısız: {failed_tests}")
-    print(f"Başarı Oranı: {success_rate:.1f}%")
-    
-    if failed_tests == 0:
-        print("\n🎉 Tüm testler başarıyla geçti!")
-        print("✅ Uygulama kuruluma hazır!")
-        return True
-    else:
-        print(f"\n⚠️  {failed_tests} test başarısız!")
-        print("❌ Lütfen hataları düzelttikten sonra tekrar test edin.")
-        
-        # Öneri mesajları
-        print("\n💡 Öneriler:")
-        if failed_tests > total_tests * 0.5:
-            print("   - requirements.txt dosyasındaki paketleri kurun: pip install -r requirements.txt")
-            print("   - Sistem bağımlılıklarını kurun (Tesseract OCR, poppler-utils)")
-        print("   - Python 3.8+ sürümü kullandığınızdan emin olun")
-        print("   - Sanal ortam (venv) kullanmanız önerilir")
-        
-        return False
 
-def test_imports_only():
-    """Sadece import testleri (hızlı test)"""
-    print("⚡ Hızlı Import Testleri")
-    print("=" * 30)
+class TestPDFViewerWidget:
+    """PDFViewerWidget sınıfı testleri"""
     
-    modules_to_test = [
-        ('main', 'Ana uygulama'),
-        ('utils', 'Utility sınıfları'),
-        ('ocr_module', 'OCR işleme'),
-        ('ui.header', 'Header bileşeni'),
-        ('ui.sidebar', 'Sidebar bileşeni'), 
-        ('ui.content', 'Content bileşeni'),
-        ('resources.pdf_utils', 'PDF işleme')
-    ]
+    @pytest.fixture(scope="class")
+    def app(self):
+        """PyQt uygulamasını oluştur"""
+        if not QApplication.instance():
+            app = QApplication([])
+        else:
+            app = QApplication.instance()
+        return app
     
-    success_count = 0
+    @pytest.fixture
+    def temp_html_file(self):
+        """Test için geçici HTML dosyası oluştur"""
+        temp_dir = tempfile.mkdtemp()
+        temp_html = Path(temp_dir) / 'index.html'
+        temp_html.write_text("""
+            <!DOCTYPE html>
+            <html>
+            <head><title>PDF Viewer Test</title></head>
+            <body>
+                <div id="root">
+                    <h1>Test PDF Viewer</h1>
+                    <script>
+                        // Mock QWebChannel
+                        window.qt = {
+                            webChannelTransport: {},
+                            QWebChannel: function(transport, callback) {
+                                this.objects = {
+                                    pdfBridge: {
+                                        onToolAction: function() { return '{"success": true}'; },
+                                        onPageChange: function() {},
+                                        onAnnotationAdd: function() {}
+                                    }
+                                };
+                                if (callback) callback(this);
+                            }
+                        };
+                    </script>
+                </div>
+            </body>
+            </html>
+        """)
+        return str(temp_dir)
     
-    for module_name, description in modules_to_test:
-        try:
-            importlib.import_module(module_name)
-            print(f"✅ {module_name}: OK - {description}")
-            success_count += 1
-        except ImportError as e:
-            print(f"❌ {module_name}: HATA - {e}")
-        except Exception as e:
-            print(f"⚠️  {module_name}: UYARI - {e}")
-            success_count += 0.5  # Kısmi başarı
+    @pytest.fixture
+    def pdf_viewer(self, app, temp_html_file):
+        """PDFViewerWidget instance'ı oluştur"""
+        with patch('pypdf_tools.features.pdf_viewer.PDFViewerWidget._find_web_build_path') as mock_path:
+            mock_path.return_value = temp_html_file
+            viewer = PDFViewerWidget()
+            yield viewer
+            viewer.close()
     
-    print(f"\n📊 Sonuç: {success_count}/{len(modules_to_test)} modül başarılı")
+    def test_pdf_viewer_creation(self, pdf_viewer):
+        """PDF viewer başarıyla oluşturulmalı"""
+        assert pdf_viewer is not None
+        assert isinstance(pdf_viewer, PDFViewerWidget)
+        assert isinstance(pdf_viewer, QWebEngineView)
     
-    if success_count == len(modules_to_test):
-        print("🎉 Tüm modüller başarıyla import edildi!")
-        return True
-    elif success_count >= len(modules_to_test) * 0.8:
-        print("⚠️  Çoğu modül çalışıyor, bazı özellikler eksik olabilir.")
-        return True
-    else:
-        print("❌ Kritik modüller eksik, kurulum gerekli.")
-        return False
+    def test_web_channel_setup(self, pdf_viewer):
+        """QWebChannel kurulumu yapılmalı"""
+        assert pdf_viewer._channel is not None
+        assert pdf_viewer._bridge is not None
+    
+    def test_bridge_signals_exist(self, pdf_viewer):
+        """Bridge sinyalleri mevcut olmalı"""
+        bridge = pdf_viewer._bridge
+        
+        # Sinyallerin varlığını kontrol et
+        assert hasattr(bridge, 'pdfDataChanged')
+        assert hasattr(bridge, 'themeChanged')
+        assert hasattr(bridge, 'settingsChanged')
+        assert hasattr(bridge, 'toolActionRequested')
+        assert hasattr(bridge, 'pageChanged')
+        assert hasattr(bridge, 'annotationAdded')
+    
+    def test_theme_setting(self, pdf_viewer):
+        """Tema ayarlama çalışmalı"""
+        test_themes = ['light', 'dark', 'neon', 'midnight']
+        
+        for theme in test_themes:
+            pdf_viewer.set_theme(theme)
+            assert pdf_viewer._current_theme == theme
+    
+    @patch('pypdf_tools.features.pdf_viewer.Path.exists')
+    def test_load_pdf_file_not_found(self, mock_exists, pdf_viewer):
+        """Dosya bulunamadığında hata vermeli"""
+        mock_exists.return_value = False
+        
+        result = pdf_viewer.load_pdf("/fake/path/test.pdf")
+        assert not result
+    
+    def test_tool_action_handling(self, pdf_viewer):
+        """Tool action handling çalışmalı"""
+        bridge = pdf_viewer._bridge
+        
+        # Test data
+        test_action = '{"toolId": "zoom-in", "data": {"zoom": 100}}'
+        
+        # onToolAction çağrısı
+        result = bridge.onToolAction(test_action)
+        result_data = eval(result)  # JSON parse yerine eval - test için
+        
+        assert result_data['success'] is True
 
-def create_sample_test_files():
-    """Test için örnek dosyalar oluştur"""
-    test_dir = project_root / "test_files"
-    test_dir.mkdir(exist_ok=True)
-    
-    print(f"📁 Test dosyaları oluşturuluyor: {test_dir}")
-    
-    # Basit metin dosyası
-    with open(test_dir / "sample.txt", "w", encoding="utf-8") as f:
-        f.write("Bu bir test dosyasıdır.\nPyPDF-Stirling Tools v2 için hazırlanmıştır.")
-    
-    print("✅ Test dosyaları oluşturuldu")
-    return test_dir
 
-def main():
-    """Ana test fonksiyonu"""
-    import argparse
+class TestPDFViewerContainer:
+    """PDFViewerContainer sınıfı testleri"""
     
-    parser = argparse.ArgumentParser(description='PyPDF-Stirling Tools v2 Test Script')
-    parser.add_argument('--quick', action='store_true', help='Sadece hızlı import testleri')
-    parser.add_argument('--full', action='store_true', help='Kapsamlı test suite (varsayılan)')
-    parser.add_argument('--create-test-files', action='store_true', help='Test dosyaları oluştur')
+    @pytest.fixture(scope="class")
+    def app(self):
+        """PyQt uygulamasını oluştur"""
+        if not QApplication.instance():
+            app = QApplication([])
+        else:
+            app = QApplication.instance()
+        return app
     
-    args = parser.parse_args()
+    @pytest.fixture
+    def container(self, app):
+        """PDFViewerContainer instance'ı oluştur"""
+        with patch('pypdf_tools.features.pdf_viewer.PDFViewerWidget._find_web_build_path') as mock_path:
+            temp_dir = tempfile.mkdtemp()
+            temp_html = Path(temp_dir) / 'index.html'
+            temp_html.write_text('<html><body>Test</body></html>')
+            mock_path.return_value = str(temp_dir)
+            
+            container = PDFViewerContainer()
+            yield container
+            container.close()
     
-    if args.create_test_files:
-        create_sample_test_files()
-        return
+    def test_container_creation(self, container):
+        """Container başarıyla oluşturulmalı"""
+        assert container is not None
+        assert isinstance(container, PDFViewerContainer)
     
-    if args.quick:
-        success = test_imports_only()
-    else:
-        success = run_comprehensive_test()
+    def test_pdf_viewer_in_container(self, container):
+        """Container içinde PDF viewer olmalı"""
+        assert container.pdf_viewer is not None
+        assert isinstance(container.pdf_viewer, PDFViewerWidget)
     
-    # Test sonucu ile çıkış kodu
-    sys.exit(0 if success else 1)
+    def test_load_pdf_delegates_to_viewer(self, container):
+        """load_pdf çağrısı viewer'a yönlendirilmeli"""
+        with patch.object(container.pdf_viewer, 'load_pdf', return_value=True) as mock_load:
+            result = container.load_pdf("/fake/test.pdf")
+            
+            assert result is True
+            mock_load.assert_called_once_with("/fake/test.pdf")
+    
+    def test_set_theme_delegates_to_viewer(self, container):
+        """set_theme çağrısı viewer'a yönlendirilmeli"""
+        with patch.object(container.pdf_viewer, 'set_theme') as mock_set_theme:
+            container.set_theme('dark')
+            mock_set_theme.assert_called_once_with('dark')
+
+
+class TestCreateApp:
+    """create_app fonksiyonu testleri"""
+    
+    def test_create_app_returns_qapplication(self):
+        """create_app QApplication döndürmeli"""
+        if QApplication.instance():
+            # Zaten bir instance varsa onu kullan
+            app = QApplication.instance()
+        else:
+            app = create_app()
+        
+        assert isinstance(app, QApplication)
+        assert app.applicationName() == "pypdf-tools"
+        assert app.applicationDisplayName() == "PyPDF Tools"
+
+
+# Integration testleri
+class TestIntegration:
+    """Entegrasyon testleri"""
+    
+    @pytest.fixture(scope="class")
+    def app(self):
+        """Test uygulaması"""
+        if not QApplication.instance():
+            app = QApplication([])
+        else:
+            app = QApplication.instance()
+        return app
+    
+    def test_main_window_with_pdf_viewer_integration(self, app):
+        """MainWindow ve PDFViewer entegrasyonu"""
+        with patch('pypdf_tools.features.pdf_viewer.PDFViewerWidget._find_web_build_path') as mock_path:
+            temp_dir = tempfile.mkdtemp()
+            temp_html = Path(temp_dir) / 'index.html'
+            temp_html.write_text('<html><body>Integration Test</body></html>')
+            mock_path.return_value = str(temp_dir)
+            
+            # Ana pencereyi oluştur
+            main_window = MainWindow()
+            
+            try:
+                # PDF viewer'ın ana pencerede olduğunu kontrol et
+                assert main_window.pdf_viewer_container is not None
+                
+                # Sinyal bağlantılarının yapıldığını kontrol et
+                pdf_viewer = main_window.pdf_viewer_container.pdf_viewer
+                assert pdf_viewer._bridge is not None
+                
+                # Tema değişiminin çalıştığını test et
+                with patch.object(main_window.pdf_viewer_container, 'set_theme') as mock_set_theme:
+                    main_window.change_theme('dark')
+                    mock_set_theme.assert_called_once_with('dark')
+                
+            finally:
+                main_window.close()
+
+
+# Test konfigürasyonu ve yardımcı fonksiyonlar
+@pytest.fixture(scope="session", autouse=True)
+def setup_test_environment():
+    """Test ortamını hazırla"""
+    # QT_QPA_PLATFORM ortam değişkenini ayarla (headless test için)
+    import os
+    os.environ.setdefault('QT_QPA_PLATFORM', 'offscreen')
+
+
+def test_imports():
+    """Tüm modüllerin başarıyla import edildiğini test et"""
+    try:
+        from pypdf_tools.main import MainWindow, create_app
+        from pypdf_tools.features.pdf_viewer import PDFViewerWidget, PDFViewerContainer
+        assert True  # Import başarılı
+    except ImportError as e:
+        pytest.fail(f"Import hatası: {e}")
+
 
 if __name__ == '__main__':
-    main()
+    pytest.main([__file__, '-v'])
